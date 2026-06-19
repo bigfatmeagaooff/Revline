@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="revline_red">#D32F2F</color>
+    <color name="revline_red_dark">#9A0007</color>
+    <color name="revline_ink">#121212</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

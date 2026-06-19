@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Revline</string>
+
+    <!-- Common -->
+    <string name="value_dash">—</string>
+
+    <!-- MainActivity -->
+    <string name="main_title">Your Drives</string>
+    <string name="empty_trips">No drives yet.\nTap + to track your first one.</string>
+    <string name="new_trip">New drive</string>
+
+    <!-- Trip list item -->
+    <string name="trip_item_times">Maps: %1$d min · Actual: %2$.0f min</string>
+    <string name="trip_item_times_in_progress">Maps: %1$d min · In progress</string>
+    <string name="trip_item_distance">%1$.1f km</string>
+    <string name="trip_item_top_speed">Top %1$.0f km/h</string>
+
+    <!-- NewTripActivity -->
+    <string name="new_trip_title">New Drive</string>
+    <string name="predicted_minutes_hint">What does Google Maps say? (minutes)</string>
+    <string name="predicted_distance_hint">Predicted distance (km) — optional</string>
+    <string name="start_drive">Start Drive</string>
+    <string name="stop_drive">Stop Drive</string>
+    <string name="error_minutes_required">Enter the predicted minutes</string>
+    <string name="location_permission_required">Location permission is required to track your drive.</string>
+    <string name="tracking_in_progress">Tracking your drive…</string>
+    <string name="elapsed_format">%1$02d:%2$02d</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Drive tracking</string>
+    <string name="notification_channel_desc">Shows an ongoing notification while a drive is being tracked.</string>
+    <string name="notification_title">Revline is tracking your drive</string>
+    <string name="notification_text">%1$d min elapsed</string>
+
+    <!-- TripSummaryActivity -->
+    <string name="summary_title">Drive Summary</string>
+    <string name="label_distance">Distance</string>
+    <string name="label_duration">Duration</string>
+    <string name="label_avg_speed">Avg speed</string>
+    <string name="label_top_speed">Top speed</string>
+    <string name="summary_distance_value">%1$.2f km</string>
+    <string name="summary_duration_value">%1$.1f min</string>
+    <string name="summary_speed_value">%1$.0f km/h</string>
+    <string name="summary_prediction">Maps said %1$d min — took %2$d min (%3$s)</string>
+    <string name="delta_over">+%1$d min</string>
+    <string name="delta_under">−%1$d min</string>
+    <string name="delta_exact">spot on</string>
+</resources>
