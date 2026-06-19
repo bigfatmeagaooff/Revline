@@ -1,0 +1,43 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected instead.
+      placeholder: When I stop a drive, the top speed shows 0...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start a new drive with predicted time 20 min
+        2. Drive for a while
+        3. Tap Stop Drive
+        4. See incorrect summary
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device & Android version
+      placeholder: Pixel 7, Android 14
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      placeholder: 1.0 (versionCode 1)
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: Paste any relevant logcat output.
+      render: shell

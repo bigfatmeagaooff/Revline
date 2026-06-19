@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an idea for Revline
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem or use case?
+      placeholder: I want to see my route on a map after a drive...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen?
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the long-term roadmap does this touch?
+      options:
+        - Drive tracking
+        - Route map
+        - Leaderboards
+        - Bluetooth / OBD2
+        - Car meets / cruises
+        - Social feed
+        - Other
+    validations:
+      required: false

@@ -1,0 +1,21 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Windows-specific scripts keep CRLF
+*.bat text eol=crlf
+
+# Gradle wrapper is a binary
+gradle/wrapper/gradle-wrapper.jar binary
+
+# Treat these as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.keystore binary
+*.jks binary
+*.apk binary
+
+# Collapse generated/lock files in diffs
+gradle/wrapper/gradle-wrapper.jar linguist-vendored
+app/schemas/** linguist-generated

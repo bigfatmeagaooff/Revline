@@ -1,5 +1,10 @@
 # Revline — Drive Tracker (MVP)
 
+[![Android CI](https://github.com/bigfatmeagaooff/Revline/actions/workflows/android.yml/badge.svg)](https://github.com/bigfatmeagaooff/Revline/actions/workflows/android.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%2026%2B-brightgreen.svg)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+
 Android app for manually tracking GPS drives and comparing your actual time
 against the Google Maps prediction. This is the **MVP** of a larger car-community
 product; this repo intentionally builds *only* the drive tracker, but its seams
