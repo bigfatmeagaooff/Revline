@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.Flow
  */
 class TripRepository(
     private val tripDao: TripDao,
-    private val trackPointDao: TrackPointDao
+    private val trackPointDao: TrackPointDao,
+    private val gForcePointDao: GForcePointDao
 ) {
 
     fun observeTrips(): Flow<List<Trip>> = tripDao.observeAll()
@@ -29,6 +30,11 @@ class TripRepository(
     suspend fun getTrackPoints(tripId: Long): List<TrackPoint> =
         trackPointDao.getForTrip(tripId)
 
+    suspend fun addGForcePoint(point: GForcePoint): Long = gForcePointDao.insert(point)
+
+    suspend fun getGForcePoints(tripId: Long): List<GForcePoint> =
+        gForcePointDao.getForTrip(tripId)
+
     companion object {
         @Volatile
         private var INSTANCE: TripRepository? = null
@@ -37,7 +43,11 @@ class TripRepository(
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: run {
                     val db = AppDatabase.getInstance(context)
-                    TripRepository(db.tripDao(), db.trackPointDao()).also { INSTANCE = it }
+                    TripRepository(
+                        db.tripDao(),
+                        db.trackPointDao(),
+                        db.gForcePointDao()
+                    ).also { INSTANCE = it }
                 }
             }
         }

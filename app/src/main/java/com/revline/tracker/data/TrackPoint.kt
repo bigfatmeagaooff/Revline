@@ -35,6 +35,13 @@ data class TrackPoint(
     /** Raw speed from the location provider in m/s, if available. */
     val speedMps: Float? = null,
 
+    /**
+     * Horizontal accuracy radius in meters from the location provider, if available.
+     * Stored as-recorded (we never discard raw GPS on write); low-confidence points
+     * are filtered at calculation/render time. See [com.revline.tracker.util.SpeedCalculator].
+     */
+    val accuracyMeters: Float? = null,
+
     val timestamp: Long
 ) {
     fun toJson(): JSONObject {
@@ -44,6 +51,7 @@ data class TrackPoint(
         json.put("lat", lat)
         json.put("lon", lon)
         json.put("speedMps", speedMps ?: JSONObject.NULL)
+        json.put("accuracyMeters", accuracyMeters ?: JSONObject.NULL)
         json.put("timestamp", timestamp)
         return json
     }

@@ -45,11 +45,14 @@ data class Trip(
     // future: val carId: String? = null  // FK to a future Car table (make/model/year). Not implemented in v1.
 ) {
     /**
-     * Serializes this trip and its breadcrumb [trackPoints] to JSON. This is the
-     * future hook for uploading a trip to a leaderboard / sync backend without
-     * touching the schema.
+     * Serializes this trip with its breadcrumb [trackPoints] and [gForcePoints] to
+     * JSON. This is the future hook for uploading a trip to a leaderboard / sync
+     * backend without touching the schema.
      */
-    fun toJson(trackPoints: List<TrackPoint> = emptyList()): JSONObject {
+    fun toJson(
+        trackPoints: List<TrackPoint> = emptyList(),
+        gForcePoints: List<GForcePoint> = emptyList()
+    ): JSONObject {
         val json = JSONObject()
         json.put("id", id)
         json.put("deviceId", deviceId)
@@ -68,6 +71,12 @@ data class Trip(
             pointsArray.put(point.toJson())
         }
         json.put("trackPoints", pointsArray)
+
+        val gForceArray = JSONArray()
+        for (point in gForcePoints) {
+            gForceArray.put(point.toJson())
+        }
+        json.put("gForcePoints", gForceArray)
         return json
     }
 }

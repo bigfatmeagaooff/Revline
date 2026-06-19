@@ -10,11 +10,40 @@ import kotlin.math.sqrt
 /**
  * Pure functions for deriving trip stats from a list of [TrackPoint]s.
  * No Android dependencies — easy to unit test and reuse server-side later.
+ *
+ * GPS outlier rejection (Phase 2): in weak-reception areas the provider occasionally
+ * returns a wildly inaccurate fix, which — because speed is distance/time between
+ * points — produces phantom speed spikes (a real test drive logged 402 km/h in a CRV).
+ * Raw points are kept as-recorded in the DB; we clean at calculation/render time via:
+ *   1. accuracy filtering — drop points whose reported accuracy is worse than
+ *      [MAX_ACCURACY_METERS] (points with unknown accuracy, e.g. legacy V1.0 data,
+ *      are kept),
+ *   2. a speed sanity ceiling — reject a segment whose *derived* speed exceeds
+ *      [MAX_PLAUSIBLE_KMH], bridging across the dropped point to the next good one so
+ *      total distance isn't under-counted.
+ * [distanceKm], [topSpeedKmh] and the route-map coloring all build on [cleanSegments]
+ * so they share the same cleaned data.
  */
 object SpeedCalculator {
 
     private const val EARTH_RADIUS_M = 6_371_000.0
     private const val MPS_TO_KMH = 3.6f
+
+    /** Accuracy radius (m) beyond which a fix is treated as low-confidence. */
+    const val MAX_ACCURACY_METERS = 30f
+
+    /** Generous physical speed ceiling (km/h); segments above this are GPS jumps. */
+    const val MAX_PLAUSIBLE_KMH = 250f
+
+    /** A cleaned, kept segment between two confident points, with a speed for coloring. */
+    data class Segment(
+        val startLat: Double,
+        val startLon: Double,
+        val endLat: Double,
+        val endLon: Double,
+        val distanceMeters: Double,
+        val speedKmh: Float
+    )
 
     /** Great-circle distance between two coordinates, in meters. */
     fun haversineMeters(
@@ -30,15 +59,60 @@ object SpeedCalculator {
         return EARTH_RADIUS_M * c
     }
 
-    /** Total distance of the breadcrumb trail in kilometers. */
-    fun distanceKm(points: List<TrackPoint>): Float {
-        if (points.size < 2) return 0f
-        var meters = 0.0
-        for (i in 1 until points.size) {
-            val a = points[i - 1]
-            val b = points[i]
-            meters += haversineMeters(a.lat, a.lon, b.lat, b.lon)
+    /** A point is confident if its accuracy is unknown or within [MAX_ACCURACY_METERS]. */
+    private fun isConfident(point: TrackPoint): Boolean {
+        val accuracy = point.accuracyMeters ?: return true
+        return accuracy.isFinite() && accuracy <= MAX_ACCURACY_METERS
+    }
+
+    /** Speed derived purely from distance/time between two points, in km/h. */
+    private fun derivedSpeedKmh(a: TrackPoint, b: TrackPoint): Float {
+        val seconds = (b.timestamp - a.timestamp) / 1000.0
+        if (seconds <= 0.0) return 0f
+        val meters = haversineMeters(a.lat, a.lon, b.lat, b.lon)
+        return ((meters / seconds) * MPS_TO_KMH).toFloat()
+    }
+
+    /** Representative speed for a kept segment: prefer raw provider speed, else derived. */
+    private fun segmentSpeedKmh(a: TrackPoint, b: TrackPoint): Float {
+        val raws = listOfNotNull(a.speedMps, b.speedMps).filter { it.isFinite() && it >= 0f }
+        return if (raws.isNotEmpty()) raws.max() * MPS_TO_KMH else derivedSpeedKmh(a, b)
+    }
+
+    /**
+     * Builds the cleaned list of segments: accuracy-passing points, with single-point
+     * speed spikes dropped and bridged. Each kept segment carries its haversine distance
+     * and a representative speed (raw-preferred) for stats and route coloring.
+     */
+    fun cleanSegments(points: List<TrackPoint>): List<Segment> {
+        val good = points.filter { isConfident(it) }
+        if (good.size < 2) return emptyList()
+
+        val segments = ArrayList<Segment>(good.size)
+        var prev = good[0]
+        for (i in 1 until good.size) {
+            val cur = good[i]
+            // Reject a positional jump; keep `prev` so we bridge to the next good point.
+            if (derivedSpeedKmh(prev, cur) > MAX_PLAUSIBLE_KMH) continue
+
+            segments.add(
+                Segment(
+                    startLat = prev.lat,
+                    startLon = prev.lon,
+                    endLat = cur.lat,
+                    endLon = cur.lon,
+                    distanceMeters = haversineMeters(prev.lat, prev.lon, cur.lat, cur.lon),
+                    speedKmh = segmentSpeedKmh(prev, cur)
+                )
+            )
+            prev = cur
         }
+        return segments
+    }
+
+    /** Total distance of the cleaned trail in kilometers. */
+    fun distanceKm(points: List<TrackPoint>): Float {
+        val meters = cleanSegments(points).sumOf { it.distanceMeters }
         return (meters / 1000.0).toFloat()
     }
 
@@ -50,39 +124,13 @@ object SpeedCalculator {
         return (distanceKm / hours).toFloat()
     }
 
-    /**
-     * Top speed in km/h. Prefers the raw provider [TrackPoint.speedMps] values; for
-     * any segment where raw speed is unavailable, falls back to speed derived from
-     * the haversine distance and the time delta between consecutive points.
-     */
+    /** Top speed in km/h across the cleaned segments (raw-preferred, spikes excluded). */
     fun topSpeedKmh(points: List<TrackPoint>): Float {
-        var topMps = 0f
-
-        // Raw provider speeds (preferred).
-        for (point in points) {
-            val raw = point.speedMps
-            if (raw != null && raw.isFinite() && raw >= 0f) {
-                topMps = max(topMps, raw)
-            }
+        var top = 0f
+        for (segment in cleanSegments(points)) {
+            if (segment.speedKmh.isFinite()) top = max(top, segment.speedKmh)
         }
-
-        // Derived speed for segments lacking a reliable raw reading on either end.
-        for (i in 1 until points.size) {
-            val a = points[i - 1]
-            val b = points[i]
-            val rawUnreliable = (a.speedMps == null || b.speedMps == null)
-            if (!rawUnreliable) continue
-
-            val seconds = (b.timestamp - a.timestamp) / 1000.0
-            if (seconds <= 0.0) continue
-            val meters = haversineMeters(a.lat, a.lon, b.lat, b.lon)
-            val derivedMps = (meters / seconds).toFloat()
-            if (derivedMps.isFinite() && derivedMps >= 0f) {
-                topMps = max(topMps, derivedMps)
-            }
-        }
-
-        return topMps * MPS_TO_KMH
+        return top
     }
 
     fun mpsToKmh(mps: Float): Float = mps * MPS_TO_KMH

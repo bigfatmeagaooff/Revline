@@ -6,15 +6,18 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 
 Android app for manually tracking GPS drives and comparing your actual time
-against the Google Maps prediction. This is the **MVP** of a larger car-community
-product; this repo intentionally builds *only* the drive tracker, but its seams
-are kept open for what comes next (leaderboards, OBD2, events, social feed).
+against the Google Maps prediction. This is an early phase of a larger car-community
+product; this repo intentionally builds *only* the drive tracker (plus a route map
+and G-force tracking as of Phase 2), but its seams are kept open for what comes next
+(leaderboards, OBD2, events, social feed).
 
 - **Package:** `com.revline.tracker`
 - **Min SDK:** 26 · **Target/Compile SDK:** 35
 - **Language:** Kotlin · **UI:** plain Views + ViewBinding (no Compose)
 - **Persistence:** Room (SQLite)
 - **Location:** FusedLocationProviderClient in a foreground service
+- **Sensors:** linear-accelerometer G-force capture in the same service
+- **Map:** OSMDroid / OpenStreetMap (no API key, no billing)
 
 ---
 
@@ -28,7 +31,36 @@ are kept open for what comes next (leaderboards, OBD2, events, social feed).
    button. A persistent notification keeps tracking alive through screen-lock and
    backgrounding.
 3. **TripSummaryActivity** — distance, duration, avg/top speed, and the headline
-   predicted-vs-actual delta (e.g. *"Maps said 22 min — took 26 min (+4 min)"*).
+   predicted-vs-actual delta (e.g. *"Maps said 22 min — took 26 min (+4 min)"*),
+   plus the Phase 2 additions below.
+
+### Phase 2 additions
+
+- **Route map (speed-colored).** The trip's GPS breadcrumb trail is drawn on an
+  OSMDroid map in `TripSummaryActivity`, as multiple short polyline segments colored
+  by speed (green = slow → yellow → red = fast). The color scale is *relative to that
+  trip's* speeds (5th–95th percentile), so a city errand and a highway run each use
+  their own range. The map auto-fits the route's bounding box.
+- **G-force tracking.** The tracking service samples the device's linear-acceleration
+  sensor and records lateral (left/right) and forward (accel/brake) G. The in-progress
+  screen shows a live readout; the summary shows max lateral / max accel / max braking
+  plus a simple G-over-time graph.
+
+> **Phone mounting assumption (important for meaningful G readings):** mount the phone
+> upright in a fixed dash/windshield mount, in **portrait**, and leave it untouched for
+> the whole drive. On Start, the first ~1 second of sensor data is captured as a
+> zero-reference baseline. Lateral G is read from the device X axis and forward/braking
+> G from the Z axis. There is no full road-frame sensor fusion (out of scope for now) —
+> if the phone is loose or repositioned mid-trip, G values won't be meaningful.
+
+### GPS outlier rejection (Phase 2 bugfix)
+
+Real-world testing surfaced phantom speed spikes (a 402 km/h reading in a CRV) caused
+by inaccurate GPS fixes in low-reception areas. Raw `TrackPoint`s are still stored
+exactly as recorded; cleaning happens at calculation/render time in `SpeedCalculator`:
+points with reported accuracy worse than 30 m are excluded, and segments implying more
+than 250 km/h are rejected and bridged. This feeds top/avg speed **and** the route map
+coloring, so neither inherits the garbage.
 
 ---
 
@@ -46,9 +78,10 @@ rewrite or data migration**:
   generated UUID persisted in SharedPreferences (`util/DeviceId`) as a
   pseudo-user-id. When accounts arrive, we **backfill** `userId` instead of
   migrating schema.
-- **Clean JSON export.** `Trip.toJson(trackPoints)` and `TrackPoint.toJson()`
-  serialize a full drive (including the raw GPS breadcrumb trail). This is the
-  hook that makes "upload trip to leaderboard" trivial later.
+- **Clean JSON export.** `Trip.toJson(trackPoints, gForcePoints)` plus
+  `TrackPoint.toJson()` / `GForcePoint.toJson()` serialize a full drive (GPS
+  breadcrumb trail and G-force readings included). This is the hook that makes
+  "upload trip to leaderboard" trivial later.
 - **Car identity left as an extension point.** `Trip` has a commented
   `// future: carId: String?` placeholder. The Car table is **not** built yet —
   but adding it (and a migration to add the column) is unawkward.
@@ -71,10 +104,14 @@ app/src/main/java/com/revline/tracker/
 │   └── TripRepository.kt        # the abstraction layer (sync seam)
 ├── util/
 │   ├── DeviceId.kt              # pseudo-user-id (SharedPreferences UUID)
-│   └── SpeedCalculator.kt       # haversine distance, avg/top speed (pure Kotlin)
+│   ├── SpeedCalculator.kt       # haversine, avg/top speed, GPS outlier cleaning
+│   └── GForceCalculator.kt      # max lateral / accel / braking (pure Kotlin)
 └── ui/
-    └── TripListAdapter.kt
+    ├── TripListAdapter.kt
+    └── GForceGraphView.kt       # Canvas line graph of G over trip time
 ```
+
+(`data/` also holds `GForcePoint` + `GForcePointDao` as of Phase 2.)
 
 ### How tracking works
 
@@ -91,6 +128,17 @@ app/src/main/java/com/revline/tracker/
   - **actual duration** — `endTime − startTime`
 - UI and service communicate via an observable `TrackingService.state` flow, so the
   in-progress screen reacts to start/stop without binding to the service.
+- In parallel, the service samples the **linear-acceleration** sensor at
+  `SENSOR_DELAY_GAME`, calibrates a baseline over the first ~1s, converts to G, and
+  writes throttled (~10 Hz) `GForcePoint` rows immediately (same "don't lose data on
+  process death" rule as track points). A separate `TrackingService.gForce` flow feeds
+  the live readout.
+
+### Map attribution
+
+OpenStreetMap requires attribution. The map adds an OSMDroid `CopyrightOverlay`
+("© OpenStreetMap contributors"), shown on the map in `TripSummaryActivity`. Map tiles
+need network access when viewing a summary; offline tile caching is not implemented.
 
 ---
 

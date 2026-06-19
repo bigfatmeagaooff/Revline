@@ -7,6 +7,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Looper
 import androidx.core.app.NotificationCompat
@@ -21,6 +25,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.revline.tracker.MainActivity
 import com.revline.tracker.R
+import com.revline.tracker.data.GForcePoint
 import com.revline.tracker.data.TrackPoint
 import com.revline.tracker.data.Trip
 import com.revline.tracker.data.TripRepository
@@ -48,9 +53,26 @@ class TrackingService : LifecycleService() {
     private lateinit var repository: TripRepository
     private lateinit var fusedClient: FusedLocationProviderClient
 
+    private var sensorManager: SensorManager? = null
+    private var linearAccelSensor: Sensor? = null
+
     private var activeTripId: Long = 0L
     private var tripStartTime: Long = 0L
     private var stopping = false
+
+    // G-force calibration: average the first ~1s of (gravity-free) readings as a
+    // zero-reference, removing sensor bias / mount offset. Assumes a fixed mount.
+    private var calibrating = false
+    private var calibrationStart = 0L
+    private var calSumX = 0.0
+    private var calSumY = 0.0
+    private var calSumZ = 0.0
+    private var calCount = 0
+    private var baseX = 0f
+    private var baseY = 0f
+    private var baseZ = 0f
+    private var lastGPersistMs = 0L
+    private var lastGEmitMs = 0L
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -62,6 +84,7 @@ class TrackingService : LifecycleService() {
                     lat = location.latitude,
                     lon = location.longitude,
                     speedMps = if (location.hasSpeed()) location.speed else null,
+                    accuracyMeters = if (location.hasAccuracy()) location.accuracy else null,
                     timestamp = System.currentTimeMillis()
                 )
                 // Persist immediately; survives the process being killed mid-trip.
@@ -70,10 +93,58 @@ class TrackingService : LifecycleService() {
         }
     }
 
+    private val sensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val tripId = activeTripId
+            if (tripId == 0L || stopping) return
+            val now = System.currentTimeMillis()
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            if (calibrating) {
+                calSumX += x; calSumY += y; calSumZ += z; calCount++
+                if (now - calibrationStart >= CALIBRATION_MS && calCount > 0) {
+                    baseX = (calSumX / calCount).toFloat()
+                    baseY = (calSumY / calCount).toFloat()
+                    baseZ = (calSumZ / calCount).toFloat()
+                    calibrating = false
+                }
+                return // don't record G readings until calibrated
+            }
+
+            // Device axes for a portrait dash mount: X = lateral, Z = forward/back
+            // (Z points toward the driver, so negate it to make +forwardG = accelerating).
+            val lateralG = (x - baseX) / GRAVITY
+            val forwardG = -(z - baseZ) / GRAVITY
+
+            if (now - lastGEmitMs >= G_UI_INTERVAL_MS) {
+                lastGEmitMs = now
+                _gForce.value = GForceReading(lateralG, forwardG)
+            }
+
+            if (now - lastGPersistMs >= G_PERSIST_INTERVAL_MS) {
+                lastGPersistMs = now
+                val point = GForcePoint(
+                    tripId = tripId,
+                    lateralG = lateralG,
+                    forwardG = forwardG,
+                    timestamp = now
+                )
+                // Persist immediately (throttled), not buffered only in memory.
+                lifecycleScope.launch { repository.addGForcePoint(point) }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
+
     override fun onCreate() {
         super.onCreate()
         repository = TripRepository.getInstance(this)
         fusedClient = LocationServices.getFusedLocationProviderClient(this)
+        sensorManager = getSystemService(SensorManager::class.java)
+        linearAccelSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         createNotificationChannel()
     }
 
@@ -113,8 +184,22 @@ class TrackingService : LifecycleService() {
                 startTime = tripStartTime
             )
             requestLocationUpdates()
+            startGForceTracking()
             tickNotification()
         }
+    }
+
+    private fun startGForceTracking() {
+        val manager = sensorManager ?: return
+        val sensor = linearAccelSensor ?: return // device has no linear-accel sensor
+        calibrating = true
+        calibrationStart = System.currentTimeMillis()
+        calSumX = 0.0; calSumY = 0.0; calSumZ = 0.0; calCount = 0
+        baseX = 0f; baseY = 0f; baseZ = 0f
+        lastGPersistMs = 0L
+        lastGEmitMs = 0L
+        _gForce.value = GForceReading()
+        manager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_GAME)
     }
 
     private fun requestLocationUpdates() {
@@ -148,6 +233,8 @@ class TrackingService : LifecycleService() {
         if (stopping) return
         stopping = true
         fusedClient.removeLocationUpdates(locationCallback)
+        sensorManager?.unregisterListener(sensorListener)
+        _gForce.value = GForceReading()
         val tripId = activeTripId
 
         lifecycleScope.launch {
@@ -252,12 +339,24 @@ class TrackingService : LifecycleService() {
         private const val LOCATION_INTERVAL_MS = 2_000L
         private const val LOCATION_FASTEST_INTERVAL_MS = 1_000L
 
+        private const val GRAVITY = 9.81f
+        private const val CALIBRATION_MS = 1_000L
+        private const val G_PERSIST_INTERVAL_MS = 100L // ~10 Hz writes
+        private const val G_UI_INTERVAL_MS = 100L      // ~10 fps live readout
+
         /**
          * Observable tracking state shared with the UI. Survives config changes and
          * lets the in-progress screen react to start/stop without binding to the service.
          */
         private val _state = MutableStateFlow(TrackingState())
         val state: StateFlow<TrackingState> = _state.asStateFlow()
+
+        /**
+         * Live G-force readout, updated ~10×/s during a drive. Kept separate from
+         * [state] so the high-frequency updates don't churn start/stop UI logic.
+         */
+        private val _gForce = MutableStateFlow(GForceReading())
+        val gForce: StateFlow<GForceReading> = _gForce.asStateFlow()
 
         fun start(
             context: Context,
@@ -293,4 +392,10 @@ data class TrackingState(
     val activeTripId: Long? = null,
     val startTime: Long? = null,
     val finishedTripId: Long? = null
+)
+
+/** Live lateral/forward G readout for the in-progress screen. */
+data class GForceReading(
+    val lateralG: Float = 0f,
+    val forwardG: Float = 0f
 )

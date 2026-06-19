@@ -25,6 +25,7 @@
     <string name="location_permission_required">Location permission is required to track your drive.</string>
     <string name="tracking_in_progress">Tracking your drive…</string>
     <string name="elapsed_format">%1$02d:%2$02d</string>
+    <string name="gforce_live">Lateral %1$.2f G   |   Accel/Brake %2$+.2f G</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Drive tracking</string>
@@ -45,4 +46,16 @@
     <string name="delta_over">+%1$d min</string>
     <string name="delta_under">−%1$d min</string>
     <string name="delta_exact">spot on</string>
+
+    <!-- G-Force summary -->
+    <string name="label_gforce_section">G-Force</string>
+    <string name="label_max_lateral">Max lateral</string>
+    <string name="label_max_accel">Max accel</string>
+    <string name="label_max_braking">Max braking</string>
+    <string name="summary_g_value">%1$.2f G</string>
+    <string name="gforce_legend">Red = accel/brake · Blue = lateral (over trip time)</string>
+
+    <!-- Route map -->
+    <string name="label_route_section">Route</string>
+    <string name="route_legend">Line color = speed (green = slow → red = fast)</string>
 </resources>

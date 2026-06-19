@@ -67,6 +67,7 @@ class NewTripActivity : AppCompatActivity() {
         binding.stopDriveButton.setOnClickListener { TrackingService.stop(this) }
 
         observeTrackingState()
+        observeGForce()
     }
 
     private fun onStartClicked() {
@@ -137,6 +138,20 @@ class NewTripActivity : AppCompatActivity() {
                     } else {
                         showForm()
                     }
+                }
+            }
+        }
+    }
+
+    private fun observeGForce() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                TrackingService.gForce.collectLatest { reading ->
+                    binding.gforceLive.text = getString(
+                        R.string.gforce_live,
+                        reading.lateralG,
+                        reading.forwardG
+                    )
                 }
             }
         }
