@@ -136,6 +136,85 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Drive detail (Feature 3) -->
+        <LinearLayout
+            android:id="@+id/detailSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_detail_section"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/rowIdle"
+                style="@style/DetailRow">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_idle" />
+
+                <TextView
+                    android:id="@+id/idleValue"
+                    style="@style/DetailValue"
+                    tools:text="4m 12s" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowMovingAvg"
+                style="@style/DetailRow">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_moving_avg" />
+
+                <TextView
+                    android:id="@+id/movingAvgValue"
+                    style="@style/DetailValue"
+                    tools:text="52 km/h" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowZeroHundred"
+                style="@style/DetailRow">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_zero_hundred" />
+
+                <TextView
+                    android:id="@+id/zeroHundredValue"
+                    style="@style/DetailValue"
+                    tools:text="9.4 s" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowZeroSixty"
+                style="@style/DetailRow">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_zero_sixty" />
+
+                <TextView
+                    android:id="@+id/zeroSixtyValue"
+                    style="@style/DetailValue"
+                    tools:text="5.1 s" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowLongestStretch"
+                style="@style/DetailRow">
+
+                <TextView
+                    android:id="@+id/longestStretchLabel"
+                    style="@style/DetailLabel"
+                    tools:text="Longest over 100 km/h" />
+
+                <TextView
+                    android:id="@+id/longestStretchValue"
+                    style="@style/DetailValue"
+                    tools:text="6.2 km" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- G-Force -->
         <LinearLayout
             android:id="@+id/gforceSection"
@@ -233,6 +312,15 @@
                 android:layout_marginTop="4dp"
                 android:text="@string/gforce_legend"
                 android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/hardestBrakingValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Hardest braking: -0.71 G at 12:34 into the drive" />
         </LinearLayout>
 
         <!-- Route map (speed-colored) -->
@@ -262,6 +350,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="320dp"
                 android:layout_marginTop="12dp" />
+
+            <TextView
+                android:id="@+id/mapPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:padding="24dp"
+                android:gravity="center"
+                android:text="@string/route_empty"
+                android:textSize="14sp"
+                android:visibility="gone" />
         </LinearLayout>
 
     </LinearLayout>

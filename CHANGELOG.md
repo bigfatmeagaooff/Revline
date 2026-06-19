@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Enhanced trip summary stats (Phase 2 Feature 3).** Idle/stopped time, fastest
+  0–100 and 0–60 km/h, longest continuous stretch above 100 km/h, a hardest-braking
+  callout (G + time into the drive), and moving-average speed vs overall average — all
+  computed on read in `TripStatsCalculator` from the existing cleaned data.
+
+### Fixed
+
+- **Empty/sparse trip handling (Phase 2.1).** Trips with too few usable GPS points
+  (e.g. an indoor smoke test) now show a route placeholder instead of a world-zoomed
+  map and read "—" for distance/speed instead of `0.00`. Genuinely slow-but-tracked
+  drives still show real low numbers; the empty state only triggers on too-few-points,
+  not low speed.
+
 ## [2.0.0] - 2026-06-19
 
 ### Added

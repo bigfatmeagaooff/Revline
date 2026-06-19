@@ -45,6 +45,17 @@ and G-force tracking as of Phase 2), but its seams are kept open for what comes 
   sensor and records lateral (left/right) and forward (accel/brake) G. The in-progress
   screen shows a live readout; the summary shows max lateral / max accel / max braking
   plus a simple G-over-time graph.
+- **Enhanced drive-detail stats.** Computed on read from the same data (no new
+  sensors/permissions): idle/stopped time, fastest 0–100 and 0–60 km/h, longest
+  continuous stretch above 100 km/h, a hardest-braking callout (G + time into the
+  drive), and moving average speed (distance ÷ time actually moving) alongside the
+  overall average. All use the cleaned/filtered speed data, so a GPS jump can't fake a
+  sub-second 0–100.
+- **Empty/sparse trip handling.** A trip with too few usable GPS points (e.g. an indoor
+  test) shows a route placeholder instead of a world-zoomed map, and reads "—" for
+  distance/speed instead of a misleading `0.00 km`. A genuinely slow-but-tracked drive
+  (stuck in traffic) still shows its real low numbers — the empty state only triggers
+  when there are too few points to be meaningful, not just because speed was low.
 
 > **Phone mounting assumption (important for meaningful G readings):** mount the phone
 > upright in a fixed dash/windshield mount, in **portrait**, and leave it untouched for
@@ -105,7 +116,8 @@ app/src/main/java/com/revline/tracker/
 ├── util/
 │   ├── DeviceId.kt              # pseudo-user-id (SharedPreferences UUID)
 │   ├── SpeedCalculator.kt       # haversine, avg/top speed, GPS outlier cleaning
-│   └── GForceCalculator.kt      # max lateral / accel / braking (pure Kotlin)
+│   ├── GForceCalculator.kt      # max lateral / accel / braking, hardest brake
+│   └── TripStatsCalculator.kt   # idle, 0–100/0–60, longest stretch, moving avg
 └── ui/
     ├── TripListAdapter.kt
     └── GForceGraphView.kt       # Canvas line graph of G over trip time

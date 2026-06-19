@@ -55,7 +55,21 @@
     <string name="summary_g_value">%1$.2f G</string>
     <string name="gforce_legend">Red = accel/brake · Blue = lateral (over trip time)</string>
 
+    <!-- Enhanced drive-detail stats (Feature 3) -->
+    <string name="label_detail_section">Drive Detail</string>
+    <string name="label_idle">Idle / stopped</string>
+    <string name="label_moving_avg">Moving avg</string>
+    <string name="label_zero_hundred">0–100 km/h</string>
+    <string name="label_zero_sixty">0–60 km/h</string>
+    <string name="label_longest_stretch">Longest over %1$d km/h</string>
+    <string name="detail_idle_value">%1$s</string>
+    <string name="detail_seconds_value">%1$.1f s</string>
+    <string name="detail_distance_value">%1$.1f km</string>
+    <string name="hardest_braking_callout">Hardest braking: %1$.2f G at %2$s into the drive</string>
+
     <!-- Route map -->
     <string name="label_route_section">Route</string>
     <string name="route_legend">Line color = speed (green = slow → red = fast)</string>
+    <string name="route_empty">No route recorded for this drive — GPS signal may have been unavailable.</string>
+    <string name="no_gps_data">No GPS data</string>
 </resources>

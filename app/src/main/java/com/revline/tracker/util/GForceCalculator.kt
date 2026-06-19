@@ -31,4 +31,8 @@ object GForceCalculator {
             maxBrakingG = abs(maxBraking)
         )
     }
+
+    /** The single hardest braking reading (most negative forward G), or null if none. */
+    fun hardestBraking(points: List<GForcePoint>): GForcePoint? =
+        points.minByOrNull { it.forwardG }?.takeIf { it.forwardG < 0f }
 }

@@ -41,9 +41,13 @@ object SpeedCalculator {
         val startLon: Double,
         val endLat: Double,
         val endLon: Double,
+        val startTime: Long,
+        val endTime: Long,
         val distanceMeters: Double,
         val speedKmh: Float
-    )
+    ) {
+        val durationMillis: Long get() = endTime - startTime
+    }
 
     /** Great-circle distance between two coordinates, in meters. */
     fun haversineMeters(
@@ -101,6 +105,8 @@ object SpeedCalculator {
                     startLon = prev.lon,
                     endLat = cur.lat,
                     endLon = cur.lon,
+                    startTime = prev.timestamp,
+                    endTime = cur.timestamp,
                     distanceMeters = haversineMeters(prev.lat, prev.lon, cur.lat, cur.lon),
                     speedKmh = segmentSpeedKmh(prev, cur)
                 )
