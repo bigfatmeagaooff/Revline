@@ -15,7 +15,6 @@ import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.SpeedCalculator
 import com.revline.tracker.util.TripStatsCalculator
 import kotlinx.coroutines.launch
-import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
@@ -41,10 +40,8 @@ class TripSummaryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // OSMDroid needs a user agent set (OSM tile policy) before the map is used.
-        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
-        Configuration.getInstance().userAgentValue = packageName
-
+        // OSMDroid is configured once in RevlineApp.onCreate (user agent + cache paths),
+        // before any MapView is constructed.
         binding = ActivityTripSummaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

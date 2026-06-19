@@ -13,6 +13,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
@@ -54,7 +55,11 @@ class TrackingService : LifecycleService() {
     private lateinit var fusedClient: FusedLocationProviderClient
 
     private var sensorManager: SensorManager? = null
-    private var linearAccelSensor: Sensor? = null
+    // Prefer the fused, gravity-free sensor; fall back to the raw accelerometer on
+    // devices that don't provide TYPE_LINEAR_ACCELERATION (baseline calibration removes
+    // gravity either way, given the fixed-mount assumption).
+    private var motionSensor: Sensor? = null
+    private var loggedFirstReading = false
 
     private var activeTripId: Long = 0L
     private var tripStartTime: Long = 0L
@@ -109,6 +114,7 @@ class TrackingService : LifecycleService() {
                     baseY = (calSumY / calCount).toFloat()
                     baseZ = (calSumZ / calCount).toFloat()
                     calibrating = false
+                    Log.i(TAG, "G-force calibrated over $calCount samples; baseline=($baseX,$baseY,$baseZ)")
                 }
                 return // don't record G readings until calibrated
             }
@@ -125,6 +131,10 @@ class TrackingService : LifecycleService() {
 
             if (now - lastGPersistMs >= G_PERSIST_INTERVAL_MS) {
                 lastGPersistMs = now
+                if (!loggedFirstReading) {
+                    loggedFirstReading = true
+                    Log.i(TAG, "First G-force point: lateral=$lateralG forward=$forwardG")
+                }
                 val point = GForcePoint(
                     tripId = tripId,
                     lateralG = lateralG,
@@ -144,7 +154,13 @@ class TrackingService : LifecycleService() {
         repository = TripRepository.getInstance(this)
         fusedClient = LocationServices.getFusedLocationProviderClient(this)
         sensorManager = getSystemService(SensorManager::class.java)
-        linearAccelSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+        motionSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+            ?: sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        Log.i(
+            TAG,
+            "G-force sensor selected: " + (motionSensor?.let { "${it.name} (type ${it.type})" }
+                ?: "NONE — device has neither linear-acceleration nor accelerometer")
+        )
         createNotificationChannel()
     }
 
@@ -191,15 +207,21 @@ class TrackingService : LifecycleService() {
 
     private fun startGForceTracking() {
         val manager = sensorManager ?: return
-        val sensor = linearAccelSensor ?: return // device has no linear-accel sensor
+        val sensor = motionSensor
+        if (sensor == null) {
+            Log.w(TAG, "No motion sensor available; skipping G-force capture for this trip")
+            return
+        }
         calibrating = true
         calibrationStart = System.currentTimeMillis()
         calSumX = 0.0; calSumY = 0.0; calSumZ = 0.0; calCount = 0
         baseX = 0f; baseY = 0f; baseZ = 0f
         lastGPersistMs = 0L
         lastGEmitMs = 0L
+        loggedFirstReading = false
         _gForce.value = GForceReading()
-        manager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_GAME)
+        val registered = manager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_GAME)
+        Log.i(TAG, "registerListener(${sensor.name}) returned $registered")
     }
 
     private fun requestLocationUpdates() {
@@ -329,6 +351,8 @@ class TrackingService : LifecycleService() {
     }
 
     companion object {
+        private const val TAG = "TrackingService"
+
         const val ACTION_START = "com.revline.tracker.action.START"
         const val ACTION_STOP = "com.revline.tracker.action.STOP"
         const val EXTRA_PREDICTED_MINUTES = "extra_predicted_minutes"

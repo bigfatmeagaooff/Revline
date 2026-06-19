@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **G-force section absent on some devices (Phase 2.2).** Devices that don't provide
+  the fused `TYPE_LINEAR_ACCELERATION` sensor captured zero G-points, so the whole
+  G-Force section was hidden. The service now falls back to the raw `TYPE_ACCELEROMETER`
+  (the same sensor third-party G-meters use) when the fused one is missing — baseline
+  calibration already removes gravity, so readings are correct under the fixed-mount
+  assumption. Added diagnostic logging at sensor selection, registration, calibration,
+  and first write.
+- **Blank/white route map on some devices (Phase 2.3).** OSMDroid is now configured in
+  `RevlineApp.onCreate()` (a new `Application`) so the OSM-required user agent is set
+  before any `MapView` is constructed, and the tile cache is pinned to app-private
+  storage — fixing tile-load failures from late user-agent timing or non-writable cache
+  paths on some OEM devices.
+
 ### Added
 
 - **Enhanced trip summary stats (Phase 2 Feature 3).** Idle/stopped time, fastest
