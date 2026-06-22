@@ -13,6 +13,10 @@ on:
         description: 'Release tag (e.g. v1.0.0)'
         required: true
         default: 'v1.0.0'
+      apiBaseUrl:
+        description: 'Server base URL to bake into the APK (e.g. http://1.2.3.4/). Leave blank for the default.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -50,8 +54,17 @@ jobs:
       # Builds the debug APK so the released artifact is installable without a
       # keystore. To publish a signed release APK instead, add the signing config
       # described in the README and supply the keystore via repository secrets.
+      # The server base URL is passed through as a build flag (never committed); blank
+      # falls back to the default in app/build.gradle.kts.
       - name: Assemble APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          API_BASE_URL: ${{ github.event.inputs.apiBaseUrl }}
+        run: |
+          ARGS=""
+          if [ -n "$API_BASE_URL" ]; then
+            ARGS="-PrevlineApiBaseUrl=$API_BASE_URL"
+          fi
+          ./gradlew assembleDebug --no-daemon --stacktrace $ARGS
 
       - name: Rename APK with tag
         run: |
