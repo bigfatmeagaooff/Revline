@@ -40,6 +40,21 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, NewTripActivity::class.java))
         }
 
+        binding.toolbar.inflateMenu(R.menu.main_menu)
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_leaderboard -> {
+                    startActivity(Intent(this, LeaderboardActivity::class.java))
+                    true
+                }
+                R.id.action_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+
         observeTrips()
     }
 

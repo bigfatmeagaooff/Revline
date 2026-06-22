@@ -42,6 +42,9 @@ data class Trip(
     val topSpeedKmh: Float? = null,
     val actualDurationMinutes: Float? = null,
 
+    /** Epoch millis when this trip was successfully uploaded to the server; null = not yet. */
+    val uploadedAt: Long? = null,
+
     // future: val carId: String? = null  // FK to a future Car table (make/model/year). Not implemented in v1.
 ) {
     /**

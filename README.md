@@ -64,6 +64,36 @@ and G-force tracking as of Phase 2), but its seams are kept open for what comes 
 > G from the Z axis. There is no full road-frame sensor fusion (out of scope for now) —
 > if the phone is loose or repositioned mid-trip, G values won't be meaningful.
 
+### Phase 3 additions (accounts + leaderboard)
+
+Revline now talks to a self-hosted backend (see the companion **revline-server**
+project — Node.js + Express + Postgres). The app stays local-first: everything works
+offline, and the server is an additive sync layer reached only through `SyncRepository`,
+which sits alongside the local `TripRepository` (the Repository seam, finally used).
+
+- **Accounts** — email/password register/login (`LoginActivity` / `RegisterActivity`).
+  JWT access + refresh tokens are stored in `EncryptedSharedPreferences` (never plain
+  prefs); `AuthInterceptor` attaches the token and transparently refreshes on a 401.
+- **Trip upload** — after a drive is saved locally, `TripSummaryActivity` best-effort
+  uploads its summary (with the Phase 2 stats + your car) to the leaderboard. Failures
+  are non-fatal (the trip is already safe locally); a `uploadedAt` stamp prevents
+  re-uploads. Status shows on the summary ("Uploaded ✓" / "Upload pending" / "Sign in…").
+- **Leaderboard** — `LeaderboardActivity` (public, no login to view): top speed / 0–100 /
+  longest stretch, pull-to-refresh, shows rank, username, car, and stat.
+- **Profile / car** — `ProfileActivity` holds the account actions and a "My Car"
+  (make/model/year) stored locally and sent with uploads. *(Not the future Cars table —
+  just three strings for now.)*
+
+**Server base URL** is not hardcoded. Set it at build time:
+
+```bash
+./gradlew assembleDebug -PrevlineApiBaseUrl=http://YOUR_SERVER_IP/
+# or export REVLINE_API_BASE_URL=http://YOUR_SERVER_IP/ ; default is http://10.0.2.2:3000/
+```
+
+The app allows cleartext HTTP (the backend runs HTTP on a raw IP for now — see the
+server README for the HTTPS follow-up).
+
 ### GPS outlier rejection (Phase 2 bugfix)
 
 Real-world testing surfaced phantom speed spikes (a 402 km/h reading in a CRV) caused

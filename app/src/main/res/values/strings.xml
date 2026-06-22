@@ -72,4 +72,51 @@
     <string name="route_legend">Line color = speed (green = slow → red = fast)</string>
     <string name="route_empty">No route recorded for this drive — GPS signal may have been unavailable.</string>
     <string name="no_gps_data">No GPS data</string>
+
+    <!-- Phase 3: account / sync -->
+    <string name="login_title">Sign in</string>
+    <string name="register_title">Create account</string>
+    <string name="profile_title">Profile</string>
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_username">Username</string>
+    <string name="password_helper">At least 8 characters</string>
+    <string name="login_button">Sign in</string>
+    <string name="register_button">Register</string>
+    <string name="logout_button">Sign out</string>
+    <string name="go_to_register">No account? Create one</string>
+    <string name="go_to_login">Already have an account? Sign in</string>
+    <string name="login_success">Signed in</string>
+    <string name="register_success">Account created</string>
+    <string name="logged_out">Signed out</string>
+    <string name="signed_in_as">Signed in as %1$s</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="error_fill_all_fields">Please fill in all fields</string>
+    <string name="error_password_length">Password must be at least 8 characters</string>
+
+    <!-- My Car -->
+    <string name="my_car">My Car</string>
+    <string name="my_car_hint">Sent with your uploads so it shows on the leaderboard.</string>
+    <string name="hint_make">Make</string>
+    <string name="hint_model">Model</string>
+    <string name="hint_year">Year</string>
+    <string name="save_car">Save car</string>
+    <string name="car_saved">Car saved</string>
+
+    <!-- Upload status -->
+    <string name="upload_in_progress">Uploading to leaderboard…</string>
+    <string name="upload_done">Uploaded to leaderboard ✓</string>
+    <string name="upload_pending">Upload pending — check connection</string>
+    <string name="upload_sign_in">Sign in to upload this drive to the leaderboard</string>
+    <string name="upload_flagged">Uploaded — flagged for review</string>
+
+    <!-- Leaderboard -->
+    <string name="cat_top_speed">Top speed</string>
+    <string name="cat_zero_hundred">0–100</string>
+    <string name="cat_longest">Longest stretch</string>
+    <string name="leaderboard_rank">#%1$d</string>
+    <string name="unknown_car">Unknown car</string>
+    <string name="leaderboard_empty">No entries yet — be the first!</string>
+    <string name="leaderboard_error">Couldn\'t load leaderboard — pull to retry</string>
 </resources>

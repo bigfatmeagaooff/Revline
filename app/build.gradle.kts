@@ -12,10 +12,18 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "2.2"
+        versionCode = 4
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Server base URL is NOT hardcoded — set -PrevlineApiBaseUrl=http://YOUR_IP/ at
+        // build time (or REVLINE_API_BASE_URL in ~/.gradle/gradle.properties). Defaults to
+        // the Android emulator's host loopback for local dev.
+        val apiBaseUrl = (project.findProperty("revlineApiBaseUrl") as String?)
+            ?: System.getenv("REVLINE_API_BASE_URL")
+            ?: "http://10.0.2.2:3000/"
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -40,6 +48,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -73,4 +82,11 @@ dependencies {
 
     // Route map (open-source, no API key / billing)
     implementation(libs.osmdroid.android)
+
+    // Networking (Phase 3 — server sync)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.swiperefreshlayout)
 }

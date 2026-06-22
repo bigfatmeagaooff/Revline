@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 3 — accounts, trip upload, and leaderboard.** Revline now syncs to a
+  self-hosted backend (companion `revline-server`):
+  - Email/password auth (`LoginActivity` / `RegisterActivity`) with JWT access +
+    refresh tokens in `EncryptedSharedPreferences`; `AuthInterceptor` auto-refreshes
+    on 401.
+  - New networking layer (`SyncRepository`, `RevlineApi`, `ApiClient`, `RemoteModels`)
+    alongside the local `TripRepository` — UI never calls the network directly.
+  - Best-effort trip upload from `TripSummaryActivity` (with Phase 2 stats + car),
+    deduped server-side; new local `Trip.uploadedAt` (Room v3 migration) prevents
+    re-uploads. Upload status shown on the summary.
+  - Public `LeaderboardActivity` (top speed / 0–100 / longest stretch, pull-to-refresh).
+  - `ProfileActivity` with account actions and a locally-stored "My Car" (make/model/year)
+    sent with uploads.
+  - Server base URL is build-configurable (`-PrevlineApiBaseUrl`), not hardcoded.
+
 ### Fixed
 
 - **G-force section absent on some devices (Phase 2.2).** Devices that don't provide

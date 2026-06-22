@@ -7,9 +7,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.GForcePoint
+import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.TrackPoint
 import com.revline.tracker.data.Trip
 import com.revline.tracker.data.TripRepository
+import com.revline.tracker.data.UploadResult
 import com.revline.tracker.databinding.ActivityTripSummaryBinding
 import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.SpeedCalculator
@@ -37,6 +39,7 @@ class TripSummaryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTripSummaryBinding
     private lateinit var repository: TripRepository
+    private lateinit var sync: SyncRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +49,7 @@ class TripSummaryActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         repository = TripRepository.getInstance(this)
+        sync = SyncRepository.getInstance(this)
         setUpMap()
 
         val tripId = intent.getLongExtra(EXTRA_TRIP_ID, -1L)
@@ -70,7 +74,38 @@ class TripSummaryActivity : AppCompatActivity() {
             bindDetail(trip, trackPoints, hasRoute)
             bindGForce(trip, gForcePoints)
             renderRoute(segments, hasRoute)
+            maybeUpload(trip)
         }
+    }
+
+    /** Best-effort upload to the leaderboard — the trip is already safe locally. */
+    private fun maybeUpload(trip: Trip) {
+        if (!sync.isLoggedIn) {
+            // Only nudge for trips that haven't been uploaded; stay quiet otherwise.
+            if (trip.uploadedAt == null) showUploadStatus(getString(R.string.upload_sign_in))
+            return
+        }
+        if (trip.uploadedAt != null) {
+            showUploadStatus(getString(R.string.upload_done))
+            return
+        }
+        showUploadStatus(getString(R.string.upload_in_progress))
+        lifecycleScope.launch {
+            val message = when (val result = sync.uploadTrip(trip.id)) {
+                is UploadResult.Success ->
+                    if (result.flagged) getString(R.string.upload_flagged)
+                    else getString(R.string.upload_done)
+                is UploadResult.AlreadyUploaded -> getString(R.string.upload_done)
+                is UploadResult.NotLoggedIn -> getString(R.string.upload_sign_in)
+                is UploadResult.Failed -> getString(R.string.upload_pending)
+            }
+            showUploadStatus(message)
+        }
+    }
+
+    private fun showUploadStatus(text: String) {
+        binding.uploadStatus.visibility = View.VISIBLE
+        binding.uploadStatus.text = text
     }
 
     private fun bind(trip: Trip, hasRoute: Boolean) {
