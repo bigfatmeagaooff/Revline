@@ -65,6 +65,10 @@
             android:name=".LeaderboardActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.AdminActivity"
+            android:exported="false" />
+
         <service
             android:name=".service.TrackingService"
             android:exported="false"

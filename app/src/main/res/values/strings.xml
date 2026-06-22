@@ -119,4 +119,19 @@
     <string name="unknown_car">Unknown car</string>
     <string name="leaderboard_empty">No entries yet — be the first!</string>
     <string name="leaderboard_error">Couldn\'t load leaderboard — pull to retry</string>
+
+    <!-- Admin (only visible to admin accounts) -->
+    <string name="admin_panel">Admin Panel</string>
+    <string name="admin_title">Flagged Trips</string>
+    <string name="admin_empty">No trips awaiting review</string>
+    <string name="admin_load_error">Couldn\'t load — pull to retry</string>
+    <string name="admin_forbidden">Admin access required</string>
+    <string name="admin_action_failed">Action failed — try again</string>
+    <string name="admin_approve">Approve</string>
+    <string name="admin_reject">Reject</string>
+    <string name="admin_trust">Trust: %1$.2f</string>
+    <string name="admin_stat_top">Top %1$.0f km/h</string>
+    <string name="admin_stat_zero">0–100 %1$.1fs</string>
+    <string name="admin_stat_dist">%1$.1f km</string>
+    <string name="admin_stat_dur">%1$.1f min</string>
 </resources>

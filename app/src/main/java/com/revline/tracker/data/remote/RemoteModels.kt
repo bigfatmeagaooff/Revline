@@ -32,7 +32,8 @@ data class RefreshResponse(
 data class RemoteUser(
     val id: String,
     val email: String,
-    val username: String
+    val username: String,
+    val isAdmin: Boolean = false
 )
 
 // --- Trip upload ---
@@ -87,4 +88,33 @@ data class LeaderboardEntry(
     @SerializedName("carModel") val carModel: String?,
     @SerializedName("carYear") val carYear: Int?,
     val date: String?
+)
+
+// --- Admin ---
+
+data class FlaggedTripsResponse(
+    val flagged: List<FlaggedTrip>
+)
+
+/** One flagged trip from GET /api/admin/flagged (server returns snake_case). */
+data class FlaggedTrip(
+    val id: String,
+    val username: String,
+    @SerializedName("top_speed_kmh") val topSpeedKmh: Float?,
+    @SerializedName("zero_to_hundred_seconds") val zeroToHundredSeconds: Float?,
+    @SerializedName("distance_km") val distanceKm: Float?,
+    @SerializedName("actual_duration_minutes") val actualDurationMinutes: Float?,
+    @SerializedName("max_accel_g") val maxAccelG: Float?,
+    @SerializedName("trust_score") val trustScore: Float?,
+    @SerializedName("flag_reasons") val flagReasons: List<String>?
+)
+
+data class VerdictRequest(
+    val verdict: String
+)
+
+data class VerdictResponse(
+    val id: String?,
+    @SerializedName("admin_verdict") val adminVerdict: String?,
+    @SerializedName("admin_reviewed") val adminReviewed: Boolean?
 )

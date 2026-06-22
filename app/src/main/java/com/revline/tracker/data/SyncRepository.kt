@@ -2,12 +2,14 @@ package com.revline.tracker.data
 
 import android.content.Context
 import com.revline.tracker.data.remote.ApiClient
+import com.revline.tracker.data.remote.FlaggedTrip
 import com.revline.tracker.data.remote.LeaderboardEntry
 import com.revline.tracker.data.remote.LoginRequest
 import com.revline.tracker.data.remote.RegisterRequest
 import com.revline.tracker.data.remote.RevlineApi
 import com.revline.tracker.data.remote.TokenStore
 import com.revline.tracker.data.remote.UploadTripRequest
+import com.revline.tracker.data.remote.VerdictRequest
 import com.revline.tracker.util.CarProfile
 import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.TripStatsCalculator
@@ -30,6 +32,18 @@ sealed class UploadResult {
     data class Failed(val message: String) : UploadResult()
 }
 
+sealed class AdminListResult {
+    data class Success(val trips: List<FlaggedTrip>) : AdminListResult()
+    object Forbidden : AdminListResult()
+    data class Failed(val message: String) : AdminListResult()
+}
+
+sealed class VerdictResult {
+    object Success : VerdictResult()
+    object Forbidden : VerdictResult()
+    data class Failed(val message: String) : VerdictResult()
+}
+
 /**
  * Networking seam that sits alongside the local [TripRepository]. UI/ViewModels call
  * this; it never leaks Retrofit details upward. Local persistence still goes through
@@ -44,6 +58,7 @@ class SyncRepository private constructor(
 
     val isLoggedIn: Boolean get() = tokenStore.isLoggedIn
     val username: String? get() = tokenStore.username
+    val isAdmin: Boolean get() = tokenStore.isAdmin
 
     suspend fun register(email: String, password: String, username: String): AuthOutcome =
         withContext(Dispatchers.IO) {
@@ -60,7 +75,12 @@ class SyncRepository private constructor(
             val resp = call()
             val body = resp.body()
             if (resp.isSuccessful && body != null) {
-                tokenStore.save(body.accessToken, body.refreshToken, body.user.username)
+                tokenStore.save(
+                    body.accessToken,
+                    body.refreshToken,
+                    body.user.username,
+                    body.user.isAdmin
+                )
                 AuthOutcome.Success
             } else {
                 AuthOutcome.Error(errorMessage(resp))
@@ -154,6 +174,34 @@ class SyncRepository private constructor(
                 }
             } catch (e: Exception) {
                 Result.failure(e)
+            }
+        }
+
+    suspend fun flaggedTrips(): AdminListResult = withContext(Dispatchers.IO) {
+        try {
+            val resp = api.flaggedTrips()
+            val body = resp.body()
+            when {
+                resp.isSuccessful && body != null -> AdminListResult.Success(body.flagged)
+                resp.code() == 403 -> AdminListResult.Forbidden
+                else -> AdminListResult.Failed(errorMessage(resp))
+            }
+        } catch (e: Exception) {
+            AdminListResult.Failed(e.message ?: "Network error")
+        }
+    }
+
+    suspend fun setVerdict(tripId: String, verdict: String): VerdictResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val resp = api.setVerdict(tripId, VerdictRequest(verdict))
+                when {
+                    resp.isSuccessful -> VerdictResult.Success
+                    resp.code() == 403 -> VerdictResult.Forbidden
+                    else -> VerdictResult.Failed(errorMessage(resp))
+                }
+            } catch (e: Exception) {
+                VerdictResult.Failed(e.message ?: "Network error")
             }
         }
 

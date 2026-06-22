@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /** Retrofit interface for the Revline server. */
 interface RevlineApi {
@@ -28,4 +29,13 @@ interface RevlineApi {
 
     @GET("api/leaderboard/longest-stretch")
     suspend fun longestStretch(): Response<LeaderboardResponse>
+
+    @GET("api/admin/flagged")
+    suspend fun flaggedTrips(): Response<FlaggedTripsResponse>
+
+    @POST("api/admin/trips/{id}/verdict")
+    suspend fun setVerdict(
+        @Path("id") tripId: String,
+        @Body body: VerdictRequest
+    ): Response<VerdictResponse>
 }

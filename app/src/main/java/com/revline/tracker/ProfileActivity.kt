@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivityProfileBinding
+import com.revline.tracker.ui.AdminActivity
 import com.revline.tracker.util.CarProfile
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,9 @@ class ProfileActivity : AppCompatActivity() {
                 Toast.makeText(this@ProfileActivity, R.string.logged_out, Toast.LENGTH_SHORT).show()
             }
         }
+        binding.adminButton.setOnClickListener {
+            startActivity(Intent(this, AdminActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -57,10 +61,13 @@ class ProfileActivity : AppCompatActivity() {
             binding.accountStatus.text = getString(R.string.signed_in_as, sync.username ?: "")
             binding.loggedOutButtons.visibility = View.GONE
             binding.logoutButton.visibility = View.VISIBLE
+            // Admin entry point only appears for admin accounts — invisible to everyone else.
+            binding.adminButton.visibility = if (sync.isAdmin) View.VISIBLE else View.GONE
         } else {
             binding.accountStatus.text = getString(R.string.not_signed_in)
             binding.loggedOutButtons.visibility = View.VISIBLE
             binding.logoutButton.visibility = View.GONE
+            binding.adminButton.visibility = View.GONE
         }
     }
 

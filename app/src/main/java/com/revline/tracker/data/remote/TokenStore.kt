@@ -24,13 +24,17 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_USERNAME, null)
         set(value) = prefs.edit().putString(KEY_USERNAME, value).apply()
 
+    /** Persisted at login so the admin entry point survives restarts without an API call. */
+    val isAdmin: Boolean get() = prefs.getBoolean(KEY_IS_ADMIN, false)
+
     val isLoggedIn: Boolean get() = accessToken != null && refreshToken != null
 
-    fun save(accessToken: String, refreshToken: String, username: String) {
+    fun save(accessToken: String, refreshToken: String, username: String, isAdmin: Boolean) {
         prefs.edit()
             .putString(KEY_ACCESS, accessToken)
             .putString(KEY_REFRESH, refreshToken)
             .putString(KEY_USERNAME, username)
+            .putBoolean(KEY_IS_ADMIN, isAdmin)
             .apply()
     }
 
@@ -42,6 +46,7 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_ACCESS = "access_token"
         private const val KEY_REFRESH = "refresh_token"
         private const val KEY_USERNAME = "username"
+        private const val KEY_IS_ADMIN = "is_admin"
 
         @Volatile
         private var INSTANCE: TokenStore? = null
