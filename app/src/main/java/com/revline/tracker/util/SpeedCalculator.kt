@@ -1,9 +1,11 @@
 package com.revline.tracker.util
 
+import com.revline.tracker.data.GForcePoint
 import com.revline.tracker.data.TrackPoint
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -34,6 +36,12 @@ object SpeedCalculator {
 
     /** Generous physical speed ceiling (km/h); segments above this are GPS jumps. */
     const val MAX_PLAUSIBLE_KMH = 250f
+
+    /** Below this interpolated GPS speed, a G reading is treated as phone-handling noise. */
+    const val MOVING_THRESHOLD_KMH = 5f
+
+    /** A G reading with no TrackPoint within this window is treated as stationary. */
+    private const val MAX_INTERP_GAP_MS = 5_000L
 
     /** A cleaned, kept segment between two confident points, with a speed for coloring. */
     data class Segment(
@@ -140,4 +148,79 @@ object SpeedCalculator {
     }
 
     fun mpsToKmh(mps: Float): Float = mps * MPS_TO_KMH
+
+    // --- Speed-gated G-force (Phase 3.3 Feature 1) ---
+
+    private data class SpeedSample(val timestamp: Long, val speedKmh: Float)
+
+    /** Per-TrackPoint speed (raw provider preferred, else derived from the previous point). */
+    private fun speedSamples(points: List<TrackPoint>): List<SpeedSample> {
+        if (points.isEmpty()) return emptyList()
+        val out = ArrayList<SpeedSample>(points.size)
+        for (i in points.indices) {
+            val p = points[i]
+            val raw = p.speedMps
+            val kmh = when {
+                raw != null && raw.isFinite() && raw >= 0f -> raw * MPS_TO_KMH
+                i > 0 -> {
+                    val a = points[i - 1]
+                    val seconds = (p.timestamp - a.timestamp) / 1000.0
+                    if (seconds > 0.0) {
+                        ((haversineMeters(a.lat, a.lon, p.lat, p.lon) / seconds) * MPS_TO_KMH).toFloat()
+                    } else 0f
+                }
+                else -> 0f
+            }
+            out.add(SpeedSample(p.timestamp, if (kmh.isFinite() && kmh >= 0f) kmh else 0f))
+        }
+        return out
+    }
+
+    /** Interpolated GPS speed (km/h) at [timestamp], or null if no fix within the window. */
+    private fun speedKmhAt(samples: List<SpeedSample>, timestamp: Long): Float? {
+        if (samples.isEmpty()) return null
+        var before: SpeedSample? = null
+        var after: SpeedSample? = null
+        for (s in samples) {
+            if (s.timestamp <= timestamp) before = s
+            if (s.timestamp >= timestamp) { after = s; break }
+        }
+        return when {
+            before != null && after != null -> {
+                if (before.timestamp == after.timestamp) {
+                    before.speedKmh
+                } else {
+                    val nearest = min(timestamp - before.timestamp, after.timestamp - timestamp)
+                    if (nearest > MAX_INTERP_GAP_MS) null
+                    else {
+                        val frac = (timestamp - before.timestamp).toFloat() /
+                            (after.timestamp - before.timestamp).toFloat()
+                        before.speedKmh + (after.speedKmh - before.speedKmh) * frac
+                    }
+                }
+            }
+            before != null -> if (timestamp - before.timestamp <= MAX_INTERP_GAP_MS) before.speedKmh else null
+            after != null -> if (after.timestamp - timestamp <= MAX_INTERP_GAP_MS) after.speedKmh else null
+            else -> null
+        }
+    }
+
+    /**
+     * Filters [gForcePoints] down to those captured while the car was actually moving
+     * (interpolated GPS speed ≥ [MOVING_THRESHOLD_KMH]) — removes phone-handling spikes at
+     * trip start/end. Applied at calculation time; raw points stay in the DB. If there's no
+     * GPS to verify movement, all readings are treated as stationary and excluded.
+     */
+    fun movingGForcePoints(
+        trackPoints: List<TrackPoint>,
+        gForcePoints: List<GForcePoint>
+    ): List<GForcePoint> {
+        if (gForcePoints.isEmpty()) return emptyList()
+        val samples = speedSamples(trackPoints)
+        if (samples.isEmpty()) return emptyList()
+        return gForcePoints.filter { gp ->
+            val speed = speedKmhAt(samples, gp.timestamp)
+            speed != null && speed >= MOVING_THRESHOLD_KMH
+        }
+    }
 }

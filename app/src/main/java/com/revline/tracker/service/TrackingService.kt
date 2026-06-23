@@ -170,31 +170,27 @@ class TrackingService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         when (intent?.action) {
-            ACTION_START -> {
-                val predictedMinutes = intent.getIntExtra(EXTRA_PREDICTED_MINUTES, 0)
-                val predictedDistanceKm = if (intent.hasExtra(EXTRA_PREDICTED_DISTANCE)) {
-                    intent.getFloatExtra(EXTRA_PREDICTED_DISTANCE, 0f)
-                } else null
-                startTracking(predictedMinutes, predictedDistanceKm)
-            }
+            ACTION_START -> startTracking()
             ACTION_STOP -> stopTracking()
         }
         return START_STICKY
     }
 
-    private fun startTracking(predictedMinutes: Int, predictedDistanceKm: Float?) {
+    private fun startTracking() {
         if (activeTripId != 0L) return // already tracking
 
         tripStartTime = System.currentTimeMillis()
         startForegroundWithNotification(elapsedMinutes = 0)
 
         lifecycleScope.launch {
+            // Phase 3.3: drives start with one tap — no pre-drive prediction. predictedMinutes
+            // is 0 ("not set"); the user can optionally add a Maps prediction post-drive.
             val trip = Trip(
                 deviceId = DeviceId.get(this@TrackingService),
                 userId = null,
                 startTime = tripStartTime,
-                predictedMinutes = predictedMinutes,
-                predictedDistanceKm = predictedDistanceKm
+                predictedMinutes = 0,
+                predictedDistanceKm = null
             )
             activeTripId = repository.createTrip(trip)
             _state.value = TrackingState(
@@ -369,8 +365,6 @@ class TrackingService : LifecycleService() {
 
         const val ACTION_START = "com.revline.tracker.action.START"
         const val ACTION_STOP = "com.revline.tracker.action.STOP"
-        const val EXTRA_PREDICTED_MINUTES = "extra_predicted_minutes"
-        const val EXTRA_PREDICTED_DISTANCE = "extra_predicted_distance"
 
         private const val CHANNEL_ID = "revline_tracking"
         private const val NOTIFICATION_ID = 1001
@@ -397,17 +391,9 @@ class TrackingService : LifecycleService() {
         private val _gForce = MutableStateFlow(GForceReading())
         val gForce: StateFlow<GForceReading> = _gForce.asStateFlow()
 
-        fun start(
-            context: Context,
-            predictedMinutes: Int,
-            predictedDistanceKm: Float?
-        ) {
+        fun start(context: Context) {
             val intent = Intent(context, TrackingService::class.java).apply {
                 action = ACTION_START
-                putExtra(EXTRA_PREDICTED_MINUTES, predictedMinutes)
-                if (predictedDistanceKm != null) {
-                    putExtra(EXTRA_PREDICTED_DISTANCE, predictedDistanceKm)
-                }
             }
             context.startForegroundService(intent)
         }

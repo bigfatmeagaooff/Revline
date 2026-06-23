@@ -70,9 +70,13 @@ class TripSummaryActivity : AppCompatActivity() {
             // "Usable route" = enough confident points to be meaningful (~3+ ⇒ 2+ segments).
             val hasRoute = segments.size >= 2
 
+            // Speed-gate G readings: only those captured while actually moving count
+            // toward the summary stats / graph / hardest-braking (Phase 3.3 Feature 1).
+            val movingGForce = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
+
             bind(trip, hasRoute)
             bindDetail(trip, trackPoints, hasRoute)
-            bindGForce(trip, gForcePoints)
+            bindGForce(trip, movingGForce)
             renderRoute(segments, hasRoute)
             maybeUpload(trip)
         }
@@ -133,8 +137,17 @@ class TripSummaryActivity : AppCompatActivity() {
         val actualMinutes = trip.actualDurationMinutes
         if (actualMinutes == null) {
             binding.predictionDelta.visibility = View.GONE
+            binding.predictionEntry.visibility = View.GONE
             return
         }
+
+        // No prediction yet (0 = not set) → offer the optional inline entry, hide the banner.
+        if (trip.predictedMinutes <= 0) {
+            binding.predictionDelta.visibility = View.GONE
+            showPredictionEntry(trip)
+            return
+        }
+        binding.predictionEntry.visibility = View.GONE
 
         val predicted = trip.predictedMinutes
         val actualRounded = actualMinutes.roundToInt()
@@ -152,6 +165,24 @@ class TripSummaryActivity : AppCompatActivity() {
             actualRounded,
             deltaText
         )
+    }
+
+    /** Lightweight inline "add a Maps prediction" entry; one-time, then re-binds the banner. */
+    private fun showPredictionEntry(trip: Trip) {
+        binding.predictionEntry.visibility = View.VISIBLE
+        binding.addPredictionButton.setOnClickListener {
+            val minutes = binding.predictionInput.text?.toString()?.trim()?.toIntOrNull()
+            if (minutes == null || minutes <= 0) {
+                binding.predictionLayout.error = getString(R.string.error_minutes_required)
+                return@setOnClickListener
+            }
+            binding.predictionLayout.error = null
+            lifecycleScope.launch {
+                val updated = trip.copy(predictedMinutes = minutes)
+                repository.updateTrip(updated)
+                bindPredictionDelta(updated)
+            }
+        }
     }
 
     // --- Enhanced drive-detail stats (Feature 3) ---

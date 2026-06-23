@@ -36,14 +36,16 @@ class TripListAdapter(
             binding.tripDate.text = dateFormat.format(Date(trip.startTime))
 
             val actual = trip.actualDurationMinutes
-            binding.tripTimes.text = if (actual != null) {
-                context.getString(
-                    R.string.trip_item_times,
-                    trip.predictedMinutes,
-                    actual
-                )
-            } else {
-                context.getString(R.string.trip_item_times_in_progress, trip.predictedMinutes)
+            val hasPrediction = trip.predictedMinutes > 0 // 0 = not set (Phase 3.3)
+            binding.tripTimes.text = when {
+                actual != null && hasPrediction ->
+                    context.getString(R.string.trip_item_times, trip.predictedMinutes, actual)
+                actual != null ->
+                    context.getString(R.string.trip_item_actual_only, actual)
+                hasPrediction ->
+                    context.getString(R.string.trip_item_times_in_progress, trip.predictedMinutes)
+                else ->
+                    context.getString(R.string.trip_item_in_progress_only)
             }
 
             val distance = trip.distanceKm

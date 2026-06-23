@@ -15,6 +15,7 @@ import com.revline.tracker.data.remote.UploadTripRequest
 import com.revline.tracker.data.remote.VerdictRequest
 import com.revline.tracker.util.CarProfile
 import com.revline.tracker.util.GForceCalculator
+import com.revline.tracker.util.SpeedCalculator
 import com.revline.tracker.util.TripStatsCalculator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -119,7 +120,9 @@ class SyncRepository private constructor(
         val durationMillis = trip.actualDurationMinutes?.let { (it * 60_000f).toLong() }
             ?: ((trip.endTime ?: trip.startTime) - trip.startTime)
         val stats = TripStatsCalculator.compute(trackPoints, durationMillis, trip.distanceKm ?: 0f)
-        val g = GForceCalculator.summarize(gForcePoints)
+        // Speed-gate G readings so leaderboard/trust stats aren't polluted by stationary spikes.
+        val movingGForce = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
+        val g = GForceCalculator.summarize(movingGForce)
         val car = CarProfile.load(appContext)
 
         val request = UploadTripRequest(
@@ -137,9 +140,9 @@ class SyncRepository private constructor(
             zeroToHundredSeconds = stats.zeroToHundredSec,
             zeroToSixtySeconds = stats.zeroToSixtySec,
             longestOver100Km = stats.longestStretchKm,
-            maxLateralG = if (gForcePoints.isEmpty()) null else g.maxLateralG,
-            maxAccelG = if (gForcePoints.isEmpty()) null else g.maxAccelG,
-            maxBrakingG = if (gForcePoints.isEmpty()) null else g.maxBrakingG,
+            maxLateralG = if (movingGForce.isEmpty()) null else g.maxLateralG,
+            maxAccelG = if (movingGForce.isEmpty()) null else g.maxAccelG,
+            maxBrakingG = if (movingGForce.isEmpty()) null else g.maxBrakingG,
             carMake = car.make,
             carModel = car.model,
             carYear = car.year

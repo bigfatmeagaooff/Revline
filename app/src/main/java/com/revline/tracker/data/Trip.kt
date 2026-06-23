@@ -30,8 +30,12 @@ data class Trip(
     val startTime: Long,
     val endTime: Long? = null,
 
-    /** What Google Maps predicted, user-entered before starting. */
-    val predictedMinutes: Int,
+    /**
+     * Google Maps predicted minutes. 0 means "not set" (Phase 3.3: drives start with one
+     * tap; a prediction can be added optionally after the drive). Kept non-null to avoid a
+     * risky trips-table recreate — see AppDatabase notes.
+     */
+    val predictedMinutes: Int = 0,
 
     /** Optional user-entered predicted distance. */
     val predictedDistanceKm: Float? = null,

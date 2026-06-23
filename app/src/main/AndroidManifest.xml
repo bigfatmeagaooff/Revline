@@ -42,7 +42,7 @@
         </activity>
 
         <activity
-            android:name=".NewTripActivity"
+            android:name=".TrackingActivity"
             android:exported="false" />
 
         <activity

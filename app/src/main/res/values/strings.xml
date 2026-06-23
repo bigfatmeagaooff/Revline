@@ -12,6 +12,8 @@
     <!-- Trip list item -->
     <string name="trip_item_times">Maps: %1$d min · Actual: %2$.0f min</string>
     <string name="trip_item_times_in_progress">Maps: %1$d min · In progress</string>
+    <string name="trip_item_actual_only">Actual: %1$.0f min</string>
+    <string name="trip_item_in_progress_only">In progress</string>
     <string name="trip_item_distance">%1$.1f km</string>
     <string name="trip_item_top_speed">Top %1$.0f km/h</string>
 
@@ -46,6 +48,9 @@
     <string name="delta_over">+%1$d min</string>
     <string name="delta_under">−%1$d min</string>
     <string name="delta_exact">spot on</string>
+    <string name="prediction_prompt">Add Google Maps prediction? (optional)</string>
+    <string name="prediction_hint">Maps minutes</string>
+    <string name="prediction_add">Add</string>
 
     <!-- G-Force summary -->
     <string name="label_gforce_section">G-Force</string>

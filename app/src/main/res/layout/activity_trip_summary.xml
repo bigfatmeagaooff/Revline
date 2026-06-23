@@ -47,6 +47,51 @@
                 tools:text="Maps said 22 min — took 26 min (+4 min)" />
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Optional post-drive Maps prediction (Phase 3.3). Hidden once set. -->
+        <LinearLayout
+            android:id="@+id/predictionEntry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prediction_prompt"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/predictionLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:hint="@string/prediction_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/predictionInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addPredictionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prediction_add" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- Stats grid -->
         <LinearLayout
             android:layout_width="match_parent"

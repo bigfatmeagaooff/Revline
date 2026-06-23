@@ -8,6 +8,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Phase 3.3 (part 1) — start-flow + G-force refinements.**
+  - **Speed-gated G-force:** post-trip G stats (max lateral/accel/braking, graph, hardest
+    braking) and the uploaded G figures now exclude readings captured while stopped — each
+    `GForcePoint` is cross-referenced against interpolated GPS speed and dropped below
+    5 km/h, removing phone-handling spikes at trip start/end. Filter applied at calc time;
+    raw points kept. The live in-drive G-meter still shows everything.
+  - **One-tap Start Drive:** removed the manual pre-drive entry screen (`NewTripActivity`
+    deleted). The home-screen button starts tracking immediately into a new
+    `TrackingActivity`; the staged location-permission flow moved to `MainActivity`.
+  - **Optional post-drive prediction:** a lightweight inline field on the trip summary to
+    add a Maps prediction (minutes) after the fact; sets the predicted-vs-actual banner, or
+    stays hidden if skipped. `predictedMinutes` is now "0 = not set" (kept non-null to avoid
+    a trips-table recreate that would risk cascade-deleting breadcrumb/G data).
+  - *(Feature 4 — profile avatars / edit / stats — lands next with its server endpoints.)*
+
 - **Phase 3.2 — full admin dashboard (admin-only).** The Admin Panel button now opens a
   tabbed `AdminDashboardActivity` (ViewPager2 + TabLayout) replacing the single flagged
   screen:
