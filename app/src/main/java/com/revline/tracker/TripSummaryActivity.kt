@@ -74,11 +74,39 @@ class TripSummaryActivity : AppCompatActivity() {
             // toward the summary stats / graph / hardest-braking (Phase 3.3 Feature 1).
             val movingGForce = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
 
+            binding.restoredNote.visibility = if (trip.restoredFromServer) View.VISIBLE else View.GONE
+
             bind(trip, hasRoute)
             bindDetail(trip, trackPoints, hasRoute)
             bindGForce(trip, movingGForce)
             renderRoute(segments, hasRoute)
             maybeUpload(trip)
+            setupReupload(trip)
+        }
+    }
+
+    /** Fix 2: manual re-upload for trips with real local stats (forces a corrected send). */
+    private fun setupReupload(trip: Trip) {
+        if (!sync.isLoggedIn || !sync.hasValidStats(trip)) {
+            binding.reuploadButton.visibility = View.GONE
+            return
+        }
+        binding.reuploadButton.visibility = View.VISIBLE
+        binding.reuploadButton.setOnClickListener {
+            binding.reuploadButton.isEnabled = false
+            showUploadStatus(getString(R.string.upload_in_progress))
+            lifecycleScope.launch {
+                when (val result = sync.reuploadTrip(trip.id)) {
+                    is UploadResult.Success -> {
+                        showUploadStatus(getString(R.string.upload_done))
+                        binding.reuploadButton.visibility = View.GONE
+                    }
+                    else -> {
+                        showUploadStatus(getString(R.string.upload_failed))
+                        binding.reuploadButton.isEnabled = true
+                    }
+                }
+            }
         }
     }
 
@@ -102,9 +130,16 @@ class TripSummaryActivity : AppCompatActivity() {
                 is UploadResult.AlreadyUploaded -> getString(R.string.upload_done)
                 is UploadResult.NotLoggedIn -> getString(R.string.upload_sign_in)
                 is UploadResult.Failed -> getString(R.string.upload_pending)
+                // No real stats yet (e.g. un-finalized) — don't nag; the re-upload button
+                // appears once there are valid stats.
+                is UploadResult.NoValidStats -> null
             }
-            showUploadStatus(message)
+            if (message == null) hideUploadStatus() else showUploadStatus(message)
         }
+    }
+
+    private fun hideUploadStatus() {
+        binding.uploadStatus.visibility = View.GONE
     }
 
     private fun showUploadStatus(text: String) {

@@ -66,6 +66,23 @@ data class UploadTripRequest(
     val carYear: Int?
 )
 
+/** GET /api/trips/mine — enough to reconstruct a Trip on a new device (Fix 3). */
+data class MineTripsResponse(
+    val trips: List<MineTrip>
+)
+
+data class MineTrip(
+    @SerializedName("device_trip_id") val deviceTripId: String?,
+    @SerializedName("start_time") val startTime: String?,
+    @SerializedName("end_time") val endTime: String?,
+    @SerializedName("predicted_minutes") val predictedMinutes: Int?,
+    @SerializedName("predicted_distance_km") val predictedDistanceKm: Float?,
+    @SerializedName("distance_km") val distanceKm: Float?,
+    @SerializedName("avg_speed_kmh") val avgSpeedKmh: Float?,
+    @SerializedName("top_speed_kmh") val topSpeedKmh: Float?,
+    @SerializedName("actual_duration_minutes") val actualDurationMinutes: Float?
+)
+
 data class UploadTripResponse(
     val tripId: String,
     val trustScore: Float,

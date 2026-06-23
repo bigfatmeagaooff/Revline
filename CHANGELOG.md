@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Hotfix — null leaderboard stats, re-upload, and trip restore (demo prep).**
+  - **Null stats on upload:** uploads are now gated on real computed stats
+    (`distanceKm > 0 && topSpeedKmh > 0`), so trips that were never finalized (e.g. the
+    service was killed mid-drive) can't create empty/null server rows. The server INSERT
+    already covered every column — verified end-to-end.
+  - **Re-upload button:** `TripSummaryActivity` shows "Re-upload to leaderboard" for any
+    trip with valid local stats; it clears the local uploaded stamp and re-sends. (Delete
+    the bad null server row first so dedup doesn't block the corrected insert.)
+  - **Server-side trip restore:** on login / app start, `GET /api/trips/mine` is pulled
+    and any trip missing locally is re-inserted (keyed on deviceTripId), so reinstalling or
+    switching phones brings history back. Restored trips are stats-only (no GPS/G
+    breadcrumbs): the map + G graph are hidden and a "restored from server" note is shown.
+    New `Trip.restoredFromServer` (Room v3→v4 migration); `/api/trips/mine` extended with
+    the prediction fields needed to reconstruct a trip.
+
 ### Added
 
 - **Phase 3.3 (part 1) — start-flow + G-force refinements.**

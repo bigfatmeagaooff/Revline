@@ -84,6 +84,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         observeTrips()
+
+        // Fix 3: pull any server-side trip history missing locally (e.g. after a reinstall).
+        val sync = SyncRepository.getInstance(this)
+        if (sync.isLoggedIn) {
+            lifecycleScope.launch { sync.restoreTrips() }
+        }
     }
 
     override fun onResume() {

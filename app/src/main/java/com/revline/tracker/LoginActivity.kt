@@ -42,6 +42,7 @@ class LoginActivity : AppCompatActivity() {
             when (val result = sync.login(email, password)) {
                 is AuthOutcome.Success -> {
                     Toast.makeText(this@LoginActivity, R.string.login_success, Toast.LENGTH_SHORT).show()
+                    sync.restoreTrips() // Fix 3: bring back this account's trip history
                     finish()
                 }
                 is AuthOutcome.Error -> {

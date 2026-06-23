@@ -22,6 +22,9 @@ interface RevlineApi {
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>
 
+    @GET("api/trips/mine")
+    suspend fun getMyTrips(): Response<MineTripsResponse>
+
     @GET("api/leaderboard/top-speed")
     suspend fun topSpeed(): Response<LeaderboardResponse>
 

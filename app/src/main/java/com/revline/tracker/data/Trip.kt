@@ -49,6 +49,12 @@ data class Trip(
     /** Epoch millis when this trip was successfully uploaded to the server; null = not yet. */
     val uploadedAt: Long? = null,
 
+    /**
+     * True when this trip was restored from the server on a new device (Fix 3). Restored
+     * trips have stats only — no GPS/G breadcrumbs — so the map and G graph are hidden.
+     */
+    val restoredFromServer: Boolean = false,
+
     // future: val carId: String? = null  // FK to a future Car table (make/model/year). Not implemented in v1.
 ) {
     /**

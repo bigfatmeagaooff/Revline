@@ -115,6 +115,9 @@
     <string name="upload_pending">Upload pending — check connection</string>
     <string name="upload_sign_in">Sign in to upload this drive to the leaderboard</string>
     <string name="upload_flagged">Uploaded — flagged for review</string>
+    <string name="upload_failed">Upload failed — check connection</string>
+    <string name="reupload_button">Re-upload to leaderboard</string>
+    <string name="restored_note">Stats restored from server — route map unavailable</string>
 
     <!-- Leaderboard -->
     <string name="cat_top_speed">Top speed</string>

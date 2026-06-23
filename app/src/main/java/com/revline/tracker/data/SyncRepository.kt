@@ -14,6 +14,7 @@ import com.revline.tracker.data.remote.TokenStore
 import com.revline.tracker.data.remote.UploadTripRequest
 import com.revline.tracker.data.remote.VerdictRequest
 import com.revline.tracker.util.CarProfile
+import com.revline.tracker.util.DeviceId
 import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.SpeedCalculator
 import com.revline.tracker.util.TripStatsCalculator
@@ -33,6 +34,8 @@ sealed class UploadResult {
     data class Success(val flagged: Boolean, val deduped: Boolean) : UploadResult()
     object AlreadyUploaded : UploadResult()
     object NotLoggedIn : UploadResult()
+    /** Trip has no real computed stats yet (e.g. never finalized) — don't upload junk. */
+    object NoValidStats : UploadResult()
     data class Failed(val message: String) : UploadResult()
 }
 
@@ -113,6 +116,9 @@ class SyncRepository private constructor(
 
         val trip = tripRepository.getTrip(tripId) ?: return@withContext UploadResult.Failed("Trip not found")
         if (trip.uploadedAt != null) return@withContext UploadResult.AlreadyUploaded
+        // Fix 1: never upload a trip without real computed stats (the source of the null
+        // server rows — e.g. drives whose service was killed before finalize ran).
+        if (!hasValidStats(trip)) return@withContext UploadResult.NoValidStats
 
         val trackPoints = tripRepository.getTrackPoints(tripId)
         val gForcePoints = tripRepository.getGForcePoints(tripId)
@@ -163,6 +169,64 @@ class SyncRepository private constructor(
             UploadResult.Failed(e.message ?: "Network error")
         }
     }
+
+    /** True when the trip has real stats worth sending (distance & top speed both > 0). */
+    fun hasValidStats(trip: Trip): Boolean =
+        (trip.distanceKm ?: 0f) > 0f && (trip.topSpeedKmh ?: 0f) > 0f
+
+    /**
+     * Fix 2: force a re-upload of a trip that may have uploaded with bad/null stats —
+     * clears the local uploaded stamp, then uploads again. (The matching server-side null
+     * row must be deleted first so dedup doesn't block the corrected insert.)
+     */
+    suspend fun reuploadTrip(tripId: Long): UploadResult = withContext(Dispatchers.IO) {
+        val trip = tripRepository.getTrip(tripId)
+            ?: return@withContext UploadResult.Failed("Trip not found")
+        tripRepository.updateTrip(trip.copy(uploadedAt = null))
+        uploadTrip(tripId)
+    }
+
+    /**
+     * Fix 3: restore the user's trip history from the server (e.g. after a reinstall).
+     * Inserts any server trip not already present locally, keyed on deviceTripId (the
+     * original local id). Restored trips carry stats only — no GPS/G breadcrumbs.
+     */
+    suspend fun restoreTrips(): Int = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext 0
+        try {
+            val resp = api.getMyTrips()
+            val body = resp.body() ?: return@withContext 0
+            var restored = 0
+            for (st in body.trips) {
+                val localId = st.deviceTripId?.toLongOrNull() ?: continue
+                if (tripRepository.getTrip(localId) != null) continue // already present
+                val startTime = parseIsoMillis(st.startTime) ?: continue
+                val trip = Trip(
+                    id = localId,
+                    deviceId = DeviceId.get(appContext),
+                    userId = null,
+                    startTime = startTime,
+                    endTime = parseIsoMillis(st.endTime),
+                    predictedMinutes = st.predictedMinutes ?: 0,
+                    predictedDistanceKm = st.predictedDistanceKm,
+                    distanceKm = st.distanceKm,
+                    avgSpeedKmh = st.avgSpeedKmh,
+                    topSpeedKmh = st.topSpeedKmh,
+                    actualDurationMinutes = st.actualDurationMinutes,
+                    uploadedAt = System.currentTimeMillis(),
+                    restoredFromServer = true
+                )
+                tripRepository.createTrip(trip)
+                restored++
+            }
+            restored
+        } catch (e: Exception) {
+            0
+        }
+    }
+
+    private fun parseIsoMillis(iso: String?): Long? =
+        iso?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull() }
 
     suspend fun leaderboard(category: LeaderboardCategory): Result<List<LeaderboardEntry>> =
         withContext(Dispatchers.IO) {
