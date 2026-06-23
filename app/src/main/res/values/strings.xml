@@ -134,4 +134,30 @@
     <string name="admin_stat_zero">0–100 %1$.1fs</string>
     <string name="admin_stat_dist">%1$.1f km</string>
     <string name="admin_stat_dur">%1$.1f min</string>
+
+    <!-- Admin dashboard (Phase 3.2) -->
+    <string name="admin_dashboard_title">Admin Dashboard</string>
+    <string name="dot">●</string>
+    <string name="tab_overview">Overview</string>
+    <string name="tab_users">Users</string>
+    <string name="tab_trips">Trips</string>
+    <string name="tab_flagged">Flagged</string>
+    <string name="ov_total_users">Total users</string>
+    <string name="ov_total_trips">Total trips</string>
+    <string name="ov_total_distance">Distance driven</string>
+    <string name="ov_total_drivetime">Drive time</string>
+    <string name="ov_trips_today">Trips today</string>
+    <string name="ov_flagged">Flagged pending</string>
+    <string name="ov_active">Active right now</string>
+    <string name="ov_distance_value">%1$.1f km</string>
+    <string name="ov_drivetime_value">%1$.1f h</string>
+    <string name="ov_load_error">Couldn\'t load stats — pull to retry</string>
+    <string name="admin_user_meta">%1$d trips · Joined %2$s · %3$s</string>
+    <string name="admin_badge">ADMIN</string>
+    <string name="admin_flagged_badge">FLAGGED</string>
+    <string name="admin_verdict_approved">✓ Approved</string>
+    <string name="admin_verdict_rejected">✗ Rejected</string>
+    <string name="admin_users_empty">No users</string>
+    <string name="admin_trips_empty">No trips</string>
+    <string name="admin_trips_filter_banner">Showing one user\'s trips · tap to show all</string>
 </resources>

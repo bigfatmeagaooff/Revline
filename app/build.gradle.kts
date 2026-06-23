@@ -12,8 +12,8 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "3.1.0"
+        versionCode = 7
+        versionName = "3.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -89,4 +89,6 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.fragment.ktx)
 }

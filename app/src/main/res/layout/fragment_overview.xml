@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:text="Couldn't load" />
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_total_users" />
+                <TextView android:id="@+id/valueUsers" style="@style/DetailValue" tools:text="42" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_total_trips" />
+                <TextView android:id="@+id/valueTrips" style="@style/DetailValue" tools:text="156" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_total_distance" />
+                <TextView android:id="@+id/valueDistance" style="@style/DetailValue" tools:text="8432.5 km" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_total_drivetime" />
+                <TextView android:id="@+id/valueDriveTime" style="@style/DetailValue" tools:text="104.0 h" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_trips_today" />
+                <TextView android:id="@+id/valueTripsToday" style="@style/DetailValue" tools:text="12" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_flagged" />
+                <TextView android:id="@+id/valueFlagged" style="@style/DetailValue" tools:text="3" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/DetailRow">
+                <TextView style="@style/DetailLabel" android:text="@string/ov_active" />
+
+                <TextView
+                    android:id="@+id/activeDot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/dot"
+                    android:textColor="@color/active_green"
+                    android:textSize="16sp" />
+
+                <TextView android:id="@+id/valueActive" style="@style/DetailValue" tools:text="2" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

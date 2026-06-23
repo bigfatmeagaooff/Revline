@@ -118,3 +118,45 @@ data class VerdictResponse(
     @SerializedName("admin_verdict") val adminVerdict: String?,
     @SerializedName("admin_reviewed") val adminReviewed: Boolean?
 )
+
+data class OkResponse(val ok: Boolean = false)
+
+// --- Admin dashboard (server returns camelCase for these) ---
+
+data class AdminStats(
+    val totalUsers: Int = 0,
+    val totalTrips: Int = 0,
+    val totalDistanceKm: Float = 0f,
+    val totalDriveTimeMinutes: Float = 0f,
+    val tripsToday: Int = 0,
+    val flaggedPending: Int = 0,
+    val activeNow: Int = 0
+)
+
+data class AdminUser(
+    val id: String,
+    val email: String,
+    val username: String,
+    val createdAt: String?,
+    val lastSeen: String?,
+    val tripCount: Int = 0,
+    val isAdmin: Boolean = false,
+    val isActive: Boolean = false
+)
+
+data class AdminTrip(
+    val id: String,
+    val username: String,
+    val distanceKm: Float?,
+    val topSpeedKmh: Float?,
+    val zeroToHundredSeconds: Float?,
+    val actualDurationMinutes: Float?,
+    val carMake: String?,
+    val carModel: String?,
+    val carYear: Int?,
+    val trustScore: Float?,
+    val flagged: Boolean = false,
+    val flagReasons: List<String>? = null,
+    val adminVerdict: String?,
+    val uploadedAt: String?
+)

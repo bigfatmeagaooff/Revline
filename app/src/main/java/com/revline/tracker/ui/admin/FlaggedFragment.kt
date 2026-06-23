@@ -1,9 +1,11 @@
-package com.revline.tracker.ui
+package com.revline.tracker.ui.admin
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.revline.tracker.R
@@ -11,41 +13,40 @@ import com.revline.tracker.data.AdminListResult
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.VerdictResult
 import com.revline.tracker.data.remote.FlaggedTrip
-import com.revline.tracker.databinding.ActivityAdminBinding
+import com.revline.tracker.databinding.FragmentAdminListBinding
+import com.revline.tracker.ui.FlaggedTripAdapter
 import kotlinx.coroutines.launch
 
-/**
- * Admin-only review queue for flagged trips. Only reachable from the conditional button
- * in ProfileActivity; still re-checks server authorization (403 → finish) as a
- * belt-and-suspenders guard.
- */
-class AdminActivity : AppCompatActivity() {
+/** Tab 4 — flagged review queue (Phase 3.1 behaviour, moved into the dashboard). */
+class FlaggedFragment : Fragment() {
 
-    private lateinit var binding: ActivityAdminBinding
+    private var _binding: FragmentAdminListBinding? = null
+    private val binding get() = _binding!!
     private lateinit var sync: SyncRepository
     private lateinit var adapter: FlaggedTripAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityAdminBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        sync = SyncRepository.getInstance(this)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAdminListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        sync = SyncRepository.getInstance(requireContext())
         adapter = FlaggedTripAdapter(
             onApprove = { verdict(it, "approved") },
             onReject = { verdict(it, "rejected") }
         )
-        binding.list.layoutManager = LinearLayoutManager(this)
+        binding.list.layoutManager = LinearLayoutManager(requireContext())
         binding.list.adapter = adapter
-
         binding.swipeRefresh.setOnRefreshListener { load() }
         load()
     }
 
     private fun load() {
         binding.swipeRefresh.isRefreshing = true
-        binding.emptyState.visibility = View.GONE
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (val result = sync.flaggedTrips()) {
                 is AdminListResult.Success -> {
                     binding.swipeRefresh.isRefreshing = false
@@ -59,19 +60,19 @@ class AdminActivity : AppCompatActivity() {
                     binding.swipeRefresh.isRefreshing = false
                     adapter.submitList(emptyList())
                     binding.emptyState.visibility = View.VISIBLE
-                    binding.emptyState.text = getString(R.string.admin_load_error)
+                    binding.emptyState.setText(R.string.admin_load_error)
                 }
             }
         }
     }
 
     private fun verdict(trip: FlaggedTrip, verdict: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             when (sync.setVerdict(trip.id, verdict)) {
                 is VerdictResult.Success -> removeFromList(trip)
                 is VerdictResult.Forbidden -> forbidden()
                 is VerdictResult.Failed ->
-                    Toast.makeText(this@AdminActivity, R.string.admin_action_failed, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.admin_action_failed, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -85,7 +86,12 @@ class AdminActivity : AppCompatActivity() {
 
     private fun forbidden() {
         binding.swipeRefresh.isRefreshing = false
-        Toast.makeText(this, R.string.admin_forbidden, Toast.LENGTH_LONG).show()
-        finish()
+        Toast.makeText(requireContext(), R.string.admin_forbidden, Toast.LENGTH_LONG).show()
+        requireActivity().finish()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

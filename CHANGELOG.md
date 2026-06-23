@@ -8,6 +8,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Phase 3.2 — full admin dashboard (admin-only).** The Admin Panel button now opens a
+  tabbed `AdminDashboardActivity` (ViewPager2 + TabLayout) replacing the single flagged
+  screen:
+  - **Overview** — total users/trips/distance/drive-time, trips today, flagged pending,
+    and active-now (green dot).
+  - **Users** — all users with trip count, joined date, relative last-seen, active dot,
+    and an Admin badge; tapping a user filters the Trips tab to them.
+  - **Trips** — all trips (not just flagged) with stats, car, trust score, FLAGGED badge,
+    and verdict; pull-to-refresh; user filter banner.
+  - **Flagged** — the Phase 3.1 review queue (Approve/Reject), unchanged.
+  - Presence: `POST /api/users/heartbeat` every 3 min while the tracking service runs and
+    once on app foreground; new `last_seen` column (server migration `002_last_seen.sql`).
+  - New server endpoints: `/api/admin/stats`, `/api/admin/users`, `/api/admin/trips`
+    (`?flagged`, `?userId`). All still admin-gated; regular users see nothing different.
+
 - **Phase 3 — accounts, trip upload, and leaderboard.** Revline now syncs to a
   self-hosted backend (companion `revline-server`):
   - Email/password auth (`LoginActivity` / `RegisterActivity`) with JWT access +

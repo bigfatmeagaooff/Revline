@@ -5,4 +5,6 @@
     <color name="revline_ink">#121212</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
+    <color name="active_green">#2E7D32</color>
+    <color name="muted_gray">#757575</color>
 </resources>

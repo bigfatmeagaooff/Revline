@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivityProfileBinding
-import com.revline.tracker.ui.AdminActivity
+import com.revline.tracker.ui.AdminDashboardActivity
 import com.revline.tracker.util.CarProfile
 import kotlinx.coroutines.launch
 
@@ -47,7 +47,7 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
         binding.adminButton.setOnClickListener {
-            startActivity(Intent(this, AdminActivity::class.java))
+            startActivity(Intent(this, AdminDashboardActivity::class.java))
         }
     }
 

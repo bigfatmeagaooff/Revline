@@ -1,6 +1,9 @@
 package com.revline.tracker.data
 
 import android.content.Context
+import com.revline.tracker.data.remote.AdminStats
+import com.revline.tracker.data.remote.AdminTrip
+import com.revline.tracker.data.remote.AdminUser
 import com.revline.tracker.data.remote.ApiClient
 import com.revline.tracker.data.remote.FlaggedTrip
 import com.revline.tracker.data.remote.LeaderboardEntry
@@ -202,6 +205,43 @@ class SyncRepository private constructor(
                 }
             } catch (e: Exception) {
                 VerdictResult.Failed(e.message ?: "Network error")
+            }
+        }
+
+    /** Fire-and-forget presence ping; silently ignores failures (incl. not logged in). */
+    suspend fun sendHeartbeat() = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext
+        try {
+            api.heartbeat()
+        } catch (_: Exception) {
+            // non-fatal
+        }
+        Unit
+    }
+
+    suspend fun getAdminStats(): Result<AdminStats> = adminCall { api.adminStats() }
+
+    suspend fun getAdminUsers(): Result<List<AdminUser>> = adminCall { api.adminUsers() }
+
+    suspend fun getAdminTrips(
+        flaggedOnly: Boolean = false,
+        userId: String? = null
+    ): Result<List<AdminTrip>> = adminCall {
+        api.adminTrips(if (flaggedOnly) true else null, userId)
+    }
+
+    private suspend fun <T> adminCall(call: suspend () -> Response<T>): Result<T> =
+        withContext(Dispatchers.IO) {
+            try {
+                val resp = call()
+                val body = resp.body()
+                if (resp.isSuccessful && body != null) {
+                    Result.success(body)
+                } else {
+                    Result.failure(Exception(errorMessage(resp)))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
         }
 

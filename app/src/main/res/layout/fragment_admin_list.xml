@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <TextView
+        android:id="@+id/filterBanner"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        android:title="@string/admin_title"
-        app:titleTextColor="@color/white" />
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:drawablePadding="8dp"
+        android:text="@string/admin_trips_filter_banner"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -27,9 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingVertical="8dp"
-                tools:listitem="@layout/item_flagged_trip"
-                xmlns:tools="http://schemas.android.com/tools" />
+                android:paddingVertical="8dp" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <TextView
@@ -39,9 +42,9 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:padding="24dp"
-            android:text="@string/admin_empty"
             android:textSize="15sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            tools:text="No users" />
     </FrameLayout>
 
 </LinearLayout>

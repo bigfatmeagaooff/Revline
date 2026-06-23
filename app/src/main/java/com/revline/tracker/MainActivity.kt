@@ -7,6 +7,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.TripRepository
 import com.revline.tracker.databinding.ActivityMainBinding
 import com.revline.tracker.ui.TripListAdapter
@@ -56,6 +57,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         observeTrips()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Mark the user active on foreground (covers periods outside an active drive).
+        lifecycleScope.launch { SyncRepository.getInstance(this@MainActivity).sendHeartbeat() }
     }
 
     private fun observeTrips() {

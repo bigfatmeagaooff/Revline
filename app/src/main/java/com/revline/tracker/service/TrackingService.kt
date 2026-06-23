@@ -27,6 +27,7 @@ import com.google.android.gms.location.Priority
 import com.revline.tracker.MainActivity
 import com.revline.tracker.R
 import com.revline.tracker.data.GForcePoint
+import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.TrackPoint
 import com.revline.tracker.data.Trip
 import com.revline.tracker.data.TripRepository
@@ -52,6 +53,7 @@ import kotlinx.coroutines.withContext
 class TrackingService : LifecycleService() {
 
     private lateinit var repository: TripRepository
+    private lateinit var syncRepository: SyncRepository
     private lateinit var fusedClient: FusedLocationProviderClient
 
     private var sensorManager: SensorManager? = null
@@ -152,6 +154,7 @@ class TrackingService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         repository = TripRepository.getInstance(this)
+        syncRepository = SyncRepository.getInstance(this)
         fusedClient = LocationServices.getFusedLocationProviderClient(this)
         sensorManager = getSystemService(SensorManager::class.java)
         motionSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
@@ -202,6 +205,17 @@ class TrackingService : LifecycleService() {
             requestLocationUpdates()
             startGForceTracking()
             tickNotification()
+            tickHeartbeat()
+        }
+    }
+
+    /** While tracking, the user is active — ping presence every 3 minutes. */
+    private fun tickHeartbeat() {
+        lifecycleScope.launch {
+            while (isActive && activeTripId != 0L && !stopping) {
+                syncRepository.sendHeartbeat()
+                delay(HEARTBEAT_INTERVAL_MS)
+            }
         }
     }
 
@@ -367,6 +381,7 @@ class TrackingService : LifecycleService() {
         private const val CALIBRATION_MS = 1_000L
         private const val G_PERSIST_INTERVAL_MS = 100L // ~10 Hz writes
         private const val G_UI_INTERVAL_MS = 100L      // ~10 fps live readout
+        private const val HEARTBEAT_INTERVAL_MS = 3 * 60 * 1000L // 3 minutes
 
         /**
          * Observable tracking state shared with the UI. Survives config changes and
