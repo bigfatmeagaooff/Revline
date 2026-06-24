@@ -8,14 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivityProfileBinding
+import com.revline.tracker.databinding.CellStatBinding
 import com.revline.tracker.ui.AdminDashboardActivity
 import com.revline.tracker.util.CarProfile
 import kotlinx.coroutines.launch
+import java.util.Locale
+import kotlin.math.roundToInt
 
-/**
- * Basic profile: the account section (login/register/logout) and a "My Car" section
- * (three strings stored locally, sent with trip uploads). Not the future Cars table.
- */
+/** Profile: avatar + stats header, My Car, account actions, and a conditional admin entry. */
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
@@ -33,12 +33,9 @@ class ProfileActivity : AppCompatActivity() {
         binding.yearInput.setText(car.year?.toString().orEmpty())
 
         binding.saveCarButton.setOnClickListener { saveCar() }
-        binding.loginButton.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-        binding.registerButton.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-        }
+        binding.loginButton.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
+        binding.registerButton.setOnClickListener { startActivity(Intent(this, RegisterActivity::class.java)) }
+        binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminDashboardActivity::class.java)) }
         binding.logoutButton.setOnClickListener {
             lifecycleScope.launch {
                 sync.logout()
@@ -46,9 +43,11 @@ class ProfileActivity : AppCompatActivity() {
                 Toast.makeText(this@ProfileActivity, R.string.logged_out, Toast.LENGTH_SHORT).show()
             }
         }
-        binding.adminButton.setOnClickListener {
-            startActivity(Intent(this, AdminDashboardActivity::class.java))
-        }
+
+        // Stat cell labels (set once)
+        binding.cellDrives.statLabel.text = getString(R.string.profile_drives)
+        binding.cellTopSpeed.statLabel.text = getString(R.string.profile_top)
+        binding.cellBestKm.statLabel.text = getString(R.string.profile_best)
     }
 
     override fun onResume() {
@@ -57,18 +56,45 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun refreshAccount() {
-        if (sync.isLoggedIn) {
-            binding.accountStatus.text = getString(R.string.signed_in_as, sync.username ?: "")
+        val loggedIn = sync.isLoggedIn
+        if (loggedIn) {
+            val name = sync.username.orEmpty()
+            binding.avatar.text = name.firstOrNull()?.uppercase(Locale.getDefault()) ?: "?"
+            binding.username.text = name
+            binding.userEmail.text = sync.userEmail.orEmpty()
+            binding.userEmail.visibility = View.VISIBLE
+            binding.statsRow.visibility = View.VISIBLE
             binding.loggedOutButtons.visibility = View.GONE
             binding.logoutButton.visibility = View.VISIBLE
-            // Admin entry point only appears for admin accounts — invisible to everyone else.
             binding.adminButton.visibility = if (sync.isAdmin) View.VISIBLE else View.GONE
+            loadStats()
         } else {
-            binding.accountStatus.text = getString(R.string.not_signed_in)
+            binding.avatar.text = "?"
+            binding.username.text = getString(R.string.not_signed_in)
+            binding.userEmail.visibility = View.GONE
+            binding.statsRow.visibility = View.GONE
             binding.loggedOutButtons.visibility = View.VISIBLE
             binding.logoutButton.visibility = View.GONE
             binding.adminButton.visibility = View.GONE
         }
+    }
+
+    private fun loadStats() {
+        // Placeholder dashes until the server responds.
+        setStat(binding.cellDrives, "—", "")
+        setStat(binding.cellTopSpeed, "—", "")
+        setStat(binding.cellBestKm, "—", "")
+        lifecycleScope.launch {
+            val stats = sync.getProfileStats() ?: return@launch
+            setStat(binding.cellDrives, stats.drives.toString(), "")
+            setStat(binding.cellTopSpeed, stats.bestTopSpeedKmh.roundToInt().toString(), "")
+            setStat(binding.cellBestKm, String.format(Locale.getDefault(), "%.1f", stats.bestDistanceKm), "")
+        }
+    }
+
+    private fun setStat(cell: CellStatBinding, number: String, unit: String) {
+        cell.statNumber.text = number
+        cell.statUnit.text = unit
     }
 
     private fun saveCar() {

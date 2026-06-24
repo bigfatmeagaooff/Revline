@@ -48,6 +48,10 @@ class RegisterActivity : AppCompatActivity() {
             when (val result = sync.register(email, password, username)) {
                 is AuthOutcome.Success -> {
                     Toast.makeText(this@RegisterActivity, R.string.register_success, Toast.LENGTH_SHORT).show()
+                    startActivity(
+                        Intent(this@RegisterActivity, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    )
                     finish()
                 }
                 is AuthOutcome.Error -> {

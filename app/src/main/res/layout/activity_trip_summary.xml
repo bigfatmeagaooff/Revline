@@ -1,83 +1,196 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
+        <!-- Upload status strip -->
         <TextView
+            android:id="@+id/uploadStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="@string/summary_title"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center"
+            android:padding="10dp"
+            android:textColor="@color/bg_primary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:background="@color/success"
+            tools:text="✓ Saved to leaderboard"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/restoredNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/inter_regular"
+            android:padding="12dp"
             android:text="@string/restored_note"
+            android:textColor="@color/text_secondary"
             android:textSize="13sp"
-            android:textStyle="italic"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/uploadStatus"
+        <!-- Section 1: hero stat -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textSize="13sp"
-            android:visibility="gone"
-            tools:text="Uploaded to leaderboard ✓"
-            tools:visibility="visible" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/reuploadButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/reupload_button"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <!-- Headline prediction delta -->
-        <com.google.android.material.card.MaterialCardView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/revline_red"
-            app:cardCornerRadius="12dp">
+            android:background="@color/bg_card"
+            android:orientation="vertical"
+            android:padding="24dp">
 
             <TextView
-                android:id="@+id/predictionDelta"
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="@string/label_top_speed"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/heroTopSpeed"
+                style="@style/Text.Display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/accent_red"
+                android:textSize="96sp"
+                tools:text="124" />
+
+            <TextView
+                style="@style/Text.Unit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/unit_kmh"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/heroDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                tools:text="Mon 24 Jun · 3:19 PM" />
+
+            <TextView
+                android:id="@+id/heroMeta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                tools:text="16.3 km · 23 min" />
+        </LinearLayout>
+
+        <!-- Section 2: stats grid 2x3 (1dp dividers via parent bg) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:background="@color/divider"
+            android:orientation="vertical">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="Maps said 22 min — took 26 min (+4 min)" />
-        </com.google.android.material.card.MaterialCardView>
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
-        <!-- Optional post-drive Maps prediction (Phase 3.3). Hidden once set. -->
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellDistance"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="1dp" />
+
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellAvgSpeed"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellDuration"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="1dp" />
+
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellMovingTime"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellZeroHundred"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="1dp" />
+
+                <include
+                    layout="@layout/cell_stat"
+                    android:id="@+id/cellPeakG"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Predicted vs actual (optional) -->
+        <TextView
+            android:id="@+id/predictionDelta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:padding="16dp"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:text="Maps said 22 min — took 26 min (+4 min)"
+            tools:visibility="visible" />
+
         <LinearLayout
             android:id="@+id/predictionEntry"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
+            android:padding="16dp"
+            android:visibility="gone">
 
             <TextView
+                style="@style/Text.Body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/prediction_prompt"
@@ -92,6 +205,7 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/predictionLayout"
+                    style="@style/Widget.Revline.TextInput"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
@@ -102,340 +216,98 @@
                         android:id="@+id/predictionInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:inputType="number"
+                        android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/addPredictionButton"
+                    style="@style/Widget.Revline.Button.Outline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/prediction_add" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Stats grid -->
-        <LinearLayout
+        <!-- Section 3: route map -->
+        <FrameLayout
+            android:id="@+id/routeSection"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal">
+            android:layout_height="240dp"
+            android:layout_marginTop="1dp"
+            android:background="@color/bg_card">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_distance"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/distanceValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    tools:text="12.40 km" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_duration"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/durationValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    tools:text="26.0 min" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_avg_speed"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/avgSpeedValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    tools:text="48 km/h" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_top_speed"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/topSpeedValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    tools:text="98 km/h" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Drive detail (Feature 3) -->
-        <LinearLayout
-            android:id="@+id/detailSection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:orientation="vertical">
+            <org.osmdroid.views.MapView
+                android:id="@+id/mapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/mapPlaceholder"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_detail_section"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_gravity="center"
+                android:fontFamily="@font/inter_regular"
+                android:text="@string/no_route_data"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </FrameLayout>
 
-            <LinearLayout
-                android:id="@+id/rowIdle"
-                style="@style/DetailRow">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_idle" />
-
-                <TextView
-                    android:id="@+id/idleValue"
-                    style="@style/DetailValue"
-                    tools:text="4m 12s" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowMovingAvg"
-                style="@style/DetailRow">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_moving_avg" />
-
-                <TextView
-                    android:id="@+id/movingAvgValue"
-                    style="@style/DetailValue"
-                    tools:text="52 km/h" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowZeroHundred"
-                style="@style/DetailRow">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_zero_hundred" />
-
-                <TextView
-                    android:id="@+id/zeroHundredValue"
-                    style="@style/DetailValue"
-                    tools:text="9.4 s" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowZeroSixty"
-                style="@style/DetailRow">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_zero_sixty" />
-
-                <TextView
-                    android:id="@+id/zeroSixtyValue"
-                    style="@style/DetailValue"
-                    tools:text="5.1 s" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowLongestStretch"
-                style="@style/DetailRow">
-
-                <TextView
-                    android:id="@+id/longestStretchLabel"
-                    style="@style/DetailLabel"
-                    tools:text="Longest over 100 km/h" />
-
-                <TextView
-                    android:id="@+id/longestStretchValue"
-                    style="@style/DetailValue"
-                    tools:text="6.2 km" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- G-Force -->
+        <!-- Section 4: G-force (conditional) -->
         <LinearLayout
             android:id="@+id/gforceSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
-                android:layout_width="match_parent"
+                style="@style/Text.Section"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_gforce_section"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_max_lateral"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/maxLateralValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        tools:text="0.62 G" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_max_accel"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/maxAccelValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        tools:text="0.45 G" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_max_braking"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/maxBrakingValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        tools:text="0.71 G" />
-                </LinearLayout>
-            </LinearLayout>
+                android:textColor="@color/text_secondary" />
 
             <com.revline.tracker.ui.GForceGraphView
                 android:id="@+id/gforceGraph"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="16dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/gforce_legend"
-                android:textSize="12sp" />
+                android:layout_height="160dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/bg_card" />
 
             <TextView
                 android:id="@+id/hardestBrakingValue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:fontFamily="@font/inter_regular"
+                android:textColor="@color/text_primary"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                tools:text="Hardest braking: -0.71 G at 12:34 into the drive" />
+                tools:text="Hardest braking: 0.8 G" />
         </LinearLayout>
 
-        <!-- Route map (speed-colored) -->
+        <!-- Section 5: actions -->
         <LinearLayout
-            android:id="@+id/routeSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/shareButton"
+                style="@style/Widget.Revline.Button.Outline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/label_route_section"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:text="@string/share" />
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reuploadButton"
+                style="@style/Widget.Revline.Button.OutlineRed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/route_legend"
-                android:textSize="12sp" />
-
-            <org.osmdroid.views.MapView
-                android:id="@+id/mapView"
-                android:layout_width="match_parent"
-                android:layout_height="320dp"
-                android:layout_marginTop="12dp" />
-
-            <TextView
-                android:id="@+id/mapPlaceholder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:padding="24dp"
-                android:gravity="center"
-                android:text="@string/route_empty"
-                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:text="@string/reupload_button"
                 android:visibility="gone" />
         </LinearLayout>
 

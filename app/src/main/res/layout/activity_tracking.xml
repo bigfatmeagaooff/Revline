@@ -4,42 +4,90 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:background="@color/bg_primary"
     android:orientation="vertical"
     android:padding="24dp">
 
-    <TextView
+    <!-- GPS indicator -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/tracking_in_progress"
-        android:textSize="18sp" />
+        android:layout_gravity="end"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:text="@string/dot"
+            android:textColor="@color/success"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:text="@string/tracking_label"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.6" />
 
     <TextView
         android:id="@+id/elapsedTime"
-        android:layout_width="wrap_content"
+        style="@style/Text.Display"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/text_primary"
+        android:textSize="56sp"
+        tools:text="00:23:41" />
+
+    <TextView
+        android:id="@+id/liveSpeed"
+        style="@style/Text.Display"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:textSize="56sp"
-        android:textStyle="bold"
-        tools:text="04:21" />
+        android:gravity="center"
+        android:textColor="@color/accent_red"
+        android:textSize="112sp"
+        tools:text="109" />
+
+    <TextView
+        style="@style/Text.Unit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/unit_kmh"
+        android:textSize="22sp" />
 
     <TextView
         android:id="@+id/gforceLive"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter_regular"
         android:gravity="center"
-        android:textSize="18sp"
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
         tools:text="Lateral 0.30 G  |  Accel/Brake -0.50 G" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/stopDriveButton"
+        style="@style/Widget.Revline.Button.Primary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:paddingVertical="18dp"
-        android:text="@string/stop_drive"
-        android:textSize="18sp"
-        app:backgroundTint="@color/revline_red" />
+        android:layout_height="60dp"
+        android:text="@string/stop_drive" />
 
 </LinearLayout>

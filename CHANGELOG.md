@@ -6,6 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Full UI redesign — dark motorsport aesthetic (car-meet demo).** New design-token
+  system (`colors.xml` racing palette, `styles.xml` typography/components, dark
+  `Theme.Revline`), bundled Barlow Condensed + Inter fonts. Signature racing red
+  (`#E8000D`) reserved for speed numbers, ranks, and CTAs.
+  - New branded **SplashActivity** (red-line sweep) as launcher; routes to Main/Login.
+  - **Trip list:** redesigned cards (red top-speed, white distance, upload badge),
+    date-grouped section headers, persistent Start Drive button, empty state; ghost +
+    0-stat trips filtered out (`TripDao.observeVisible` / `deleteGhostTrips`).
+  - **Leaderboard:** tabbed (red underline), red ranks, #1 accent treatment,
+    red-tinted pull-to-refresh, designed empty state.
+  - **Trip summary:** 96sp red hero top-speed, 2×3 stat grid, conditional G-force
+    section, colored upload status strip, Share + Re-upload actions.
+  - **During-drive:** live dashboard — huge red live speed, elapsed, live G, GPS dot,
+    Stop with confirm dialog (live speed exposed via `TrackingService.liveSpeedKmh`).
+  - **Login/Register/Profile** restyled; profile gains an initials avatar + a server
+    stats row (drives / best top speed / best distance) and an exclusive admin button.
+
 ### Fixed
 
 - **Hotfix — null leaderboard stats, re-upload, and trip restore (demo prep).**

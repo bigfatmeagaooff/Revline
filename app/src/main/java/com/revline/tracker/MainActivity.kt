@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -14,16 +15,23 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.revline.tracker.data.SyncRepository
+import com.revline.tracker.data.Trip
 import com.revline.tracker.data.TripRepository
 import com.revline.tracker.databinding.ActivityMainBinding
 import com.revline.tracker.service.TrackingService
 import com.revline.tracker.ui.TripListAdapter
+import com.revline.tracker.ui.TripRow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
- * Trip history + one-tap Start Drive (Phase 3.3: no pre-drive entry screen). The staged
- * location-permission flow lives here now since this is where a drive begins.
+ * Trip history (grouped by day) + one-tap Start Drive. Ghost/0-stat trips are filtered
+ * out of the list and cleaned up on launch.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -45,10 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     private val backgroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
-        // Background location is best-effort; tracking still starts without it.
-        startDrive()
-    }
+    ) { startDrive() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,26 +71,19 @@ class MainActivity : AppCompatActivity() {
         binding.tripList.layoutManager = LinearLayoutManager(this)
         binding.tripList.adapter = adapter
 
-        binding.newTripFab.setOnClickListener { onStartDriveClicked() }
-
-        binding.toolbar.inflateMenu(R.menu.main_menu)
-        binding.toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.action_leaderboard -> {
-                    startActivity(Intent(this, LeaderboardActivity::class.java))
-                    true
-                }
-                R.id.action_profile -> {
-                    startActivity(Intent(this, ProfileActivity::class.java))
-                    true
-                }
-                else -> false
-            }
+        binding.startDriveButton.setOnClickListener { onStartDriveClicked() }
+        binding.profileButton.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
+        binding.leaderboardButton.setOnClickListener {
+            startActivity(Intent(this, LeaderboardActivity::class.java))
+        }
+
+        // Clean up any leftover in-progress rows from a killed service.
+        lifecycleScope.launch { repository.deleteGhostTrips() }
 
         observeTrips()
 
-        // Fix 3: pull any server-side trip history missing locally (e.g. after a reinstall).
         val sync = SyncRepository.getInstance(this)
         if (sync.isLoggedIn) {
             lifecycleScope.launch { sync.restoreTrips() }
@@ -94,8 +92,44 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Mark the user active on foreground (covers periods outside an active drive).
         lifecycleScope.launch { SyncRepository.getInstance(this@MainActivity).sendHeartbeat() }
+    }
+
+    private fun observeTrips() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.observeVisibleTrips().collectLatest { trips ->
+                    adapter.submitList(groupByDay(trips))
+                    binding.emptyState.visibility = if (trips.isEmpty()) View.VISIBLE else View.GONE
+                }
+            }
+        }
+    }
+
+    /** Builds header + item rows, grouping trips under TODAY / YESTERDAY / "MON 23 JUN". */
+    private fun groupByDay(trips: List<Trip>): List<TripRow> {
+        val rows = ArrayList<TripRow>(trips.size + 4)
+        var lastLabel: String? = null
+        for (trip in trips) {
+            val label = dayLabel(trip.startTime)
+            if (label != lastLabel) {
+                rows.add(TripRow.Header(label))
+                lastLabel = label
+            }
+            rows.add(TripRow.Item(trip))
+        }
+        return rows
+    }
+
+    private fun dayLabel(epochMillis: Long): String {
+        val zone = ZoneId.systemDefault()
+        val day = Instant.ofEpochMilli(epochMillis).atZone(zone).toLocalDate()
+        val today = LocalDate.now(zone)
+        return when (day) {
+            today -> getString(R.string.today).uppercase(Locale.getDefault())
+            today.minusDays(1) -> getString(R.string.yesterday).uppercase(Locale.getDefault())
+            else -> day.format(HEADER_FMT).uppercase(Locale.getDefault())
+        }
     }
 
     // --- Start Drive + staged permissions ---
@@ -117,10 +151,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Android requires background location to be requested as a separate, second prompt
-     * after fine location is already granted — it won't grant both in one dialog.
-     */
     private fun maybeRequestBackgroundThenStart() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
             !hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
@@ -139,16 +169,7 @@ class MainActivity : AppCompatActivity() {
     private fun hasPermission(permission: String): Boolean =
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
-    private fun observeTrips() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                repository.observeTrips().collectLatest { trips ->
-                    adapter.submitList(trips)
-                    binding.emptyState.visibility =
-                        if (trips.isEmpty()) android.view.View.VISIBLE
-                        else android.view.View.GONE
-                }
-            }
-        }
+    companion object {
+        private val HEADER_FMT = DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault())
     }
 }

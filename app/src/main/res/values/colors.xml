@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="revline_red">#D32F2F</color>
-    <color name="revline_red_dark">#9A0007</color>
-    <color name="revline_ink">#121212</color>
+    <!-- Revline design tokens (dark + aggressive motorsport) -->
+    <color name="bg_primary">#0A0A0A</color>
+    <color name="bg_card">#111111</color>
+    <color name="bg_elevated">#1A1A1A</color>
+    <color name="accent_red">#E8000D</color>
+    <color name="accent_red_dim">#8B0008</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#FF888888</color>
+    <color name="text_muted">#FF444444</color>
+    <color name="divider">#FF1F1F1F</color>
+    <color name="success">#FF22C55E</color>
+    <color name="warning">#FFF59E0B</color>
+
+    <!-- Legacy aliases (kept so existing layouts pick up the new palette automatically) -->
+    <color name="revline_red">#E8000D</color>
+    <color name="revline_red_dark">#8B0008</color>
+    <color name="revline_ink">#0A0A0A</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="active_green">#2E7D32</color>
-    <color name="muted_gray">#757575</color>
+    <color name="active_green">#FF22C55E</color>
+    <color name="muted_gray">#FF888888</color>
 </resources>

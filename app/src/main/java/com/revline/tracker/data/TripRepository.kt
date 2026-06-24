@@ -19,6 +19,11 @@ class TripRepository(
 
     fun observeTrips(): Flow<List<Trip>> = tripDao.observeAll()
 
+    /** Finished trips with real stats only (no ghost/0-stat rows). */
+    fun observeVisibleTrips(): Flow<List<Trip>> = tripDao.observeVisible()
+
+    suspend fun deleteGhostTrips(): Int = tripDao.deleteGhostTrips()
+
     suspend fun getTrip(tripId: Long): Trip? = tripDao.getById(tripId)
 
     suspend fun createTrip(trip: Trip): Long = tripDao.insert(trip)

@@ -1,12 +1,23 @@
 <resources>
     <string name="app_name">Revline</string>
+    <string name="tagline">DRIVE TRACKER</string>
 
     <!-- Common -->
     <string name="value_dash">—</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_km">km</string>
+    <string name="unit_min">min</string>
+    <string name="unit_g">G</string>
+    <string name="unit_s">s</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="trip_actual">%1$.0f min actual</string>
 
     <!-- MainActivity -->
     <string name="main_title">Your Drives</string>
     <string name="empty_trips">No drives yet.\nTap + to track your first one.</string>
+    <string name="empty_trips_title">No drives recorded yet</string>
+    <string name="empty_trips_sub">Hit Start Drive to record your first trip.</string>
     <string name="new_trip">New drive</string>
 
     <!-- Trip list item -->
@@ -26,6 +37,10 @@
     <string name="error_minutes_required">Enter the predicted minutes</string>
     <string name="location_permission_required">Location permission is required to track your drive.</string>
     <string name="tracking_in_progress">Tracking your drive…</string>
+    <string name="tracking_label">Tracking</string>
+    <string name="stop_confirm_title">Stop this drive?</string>
+    <string name="stop_and_save">Stop &amp; Save</string>
+    <string name="cancel">Cancel</string>
     <string name="elapsed_format">%1$02d:%2$02d</string>
     <string name="gforce_live">Lateral %1$.2f G   |   Accel/Brake %2$+.2f G</string>
 
@@ -54,6 +69,13 @@
 
     <!-- G-Force summary -->
     <string name="label_gforce_section">G-Force</string>
+    <string name="label_moving_time">Moving time</string>
+    <string name="label_0100">0–100</string>
+    <string name="label_peak_g">Peak G</string>
+    <string name="hardest_braking_simple">Hardest braking: %1$.1f G</string>
+    <string name="share">Share</string>
+    <string name="no_route_data">No route data</string>
+    <string name="share_text">%1$s — top speed %2$.0f km/h over %3$.1f km (Revline)</string>
     <string name="label_max_lateral">Max lateral</string>
     <string name="label_max_accel">Max accel</string>
     <string name="label_max_braking">Max braking</string>
@@ -101,6 +123,10 @@
     <string name="error_password_length">Password must be at least 8 characters</string>
 
     <!-- My Car -->
+    <string name="account">Account</string>
+    <string name="profile_drives">Drives</string>
+    <string name="profile_top">Top km/h</string>
+    <string name="profile_best">Best km</string>
     <string name="my_car">My Car</string>
     <string name="my_car_hint">Sent with your uploads so it shows on the leaderboard.</string>
     <string name="hint_make">Make</string>
@@ -115,6 +141,8 @@
     <string name="upload_pending">Upload pending — check connection</string>
     <string name="upload_sign_in">Sign in to upload this drive to the leaderboard</string>
     <string name="upload_flagged">Uploaded — flagged for review</string>
+    <string name="upload_done_strip">✓ Saved to leaderboard</string>
+    <string name="upload_failed_strip">⚠ Not uploaded — tap to retry</string>
     <string name="upload_failed">Upload failed — check connection</string>
     <string name="reupload_button">Re-upload to leaderboard</string>
     <string name="restored_note">Stats restored from server — route map unavailable</string>
@@ -126,6 +154,8 @@
     <string name="leaderboard_rank">#%1$d</string>
     <string name="unknown_car">Unknown car</string>
     <string name="leaderboard_empty">No entries yet — be the first!</string>
+    <string name="leaderboard_empty_v2">No drives on the board yet.\nComplete a drive to appear here.</string>
+    <string name="back">Back</string>
     <string name="leaderboard_error">Couldn\'t load leaderboard — pull to retry</string>
 
     <!-- Admin (only visible to admin accounts) -->

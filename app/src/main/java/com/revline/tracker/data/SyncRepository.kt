@@ -65,6 +65,7 @@ class SyncRepository private constructor(
 
     val isLoggedIn: Boolean get() = tokenStore.isLoggedIn
     val username: String? get() = tokenStore.username
+    val userEmail: String? get() = tokenStore.email
     val isAdmin: Boolean get() = tokenStore.isAdmin
 
     suspend fun register(email: String, password: String, username: String): AuthOutcome =
@@ -86,6 +87,7 @@ class SyncRepository private constructor(
                     body.accessToken,
                     body.refreshToken,
                     body.user.username,
+                    body.user.email,
                     body.user.isAdmin
                 )
                 AuthOutcome.Success
@@ -149,8 +151,9 @@ class SyncRepository private constructor(
             maxLateralG = if (movingGForce.isEmpty()) null else g.maxLateralG,
             maxAccelG = if (movingGForce.isEmpty()) null else g.maxAccelG,
             maxBrakingG = if (movingGForce.isEmpty()) null else g.maxBrakingG,
-            carMake = car.make,
-            carModel = car.model,
+            // Always send car strings (empty rather than null) so leaderboard rows are consistent.
+            carMake = car.make ?: "",
+            carModel = car.model ?: "",
             carYear = car.year
         )
 
@@ -222,6 +225,23 @@ class SyncRepository private constructor(
             restored
         } catch (e: Exception) {
             0
+        }
+    }
+
+    /** Aggregate stats for the profile header, computed from the user's server trips. */
+    data class ProfileStats(val drives: Int, val bestTopSpeedKmh: Float, val bestDistanceKm: Float)
+
+    suspend fun getProfileStats(): ProfileStats? = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext null
+        try {
+            val trips = api.getMyTrips().body()?.trips ?: return@withContext null
+            ProfileStats(
+                drives = trips.size,
+                bestTopSpeedKmh = trips.mapNotNull { it.topSpeedKmh }.maxOrNull() ?: 0f,
+                bestDistanceKm = trips.mapNotNull { it.distanceKm }.maxOrNull() ?: 0f
+            )
+        } catch (e: Exception) {
+            null
         }
     }
 

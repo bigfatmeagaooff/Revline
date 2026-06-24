@@ -86,6 +86,7 @@ class TrackingService : LifecycleService() {
             val tripId = activeTripId
             if (tripId == 0L) return
             for (location in result.locations) {
+                if (location.hasSpeed()) _liveSpeedKmh.value = location.speed * 3.6f
                 val point = TrackPoint(
                     tripId = tripId,
                     lat = location.latitude,
@@ -267,6 +268,7 @@ class TrackingService : LifecycleService() {
         fusedClient.removeLocationUpdates(locationCallback)
         sensorManager?.unregisterListener(sensorListener)
         _gForce.value = GForceReading()
+        _liveSpeedKmh.value = 0f
         val tripId = activeTripId
 
         lifecycleScope.launch {
@@ -390,6 +392,10 @@ class TrackingService : LifecycleService() {
          */
         private val _gForce = MutableStateFlow(GForceReading())
         val gForce: StateFlow<GForceReading> = _gForce.asStateFlow()
+
+        /** Live GPS speed in km/h for the during-drive dashboard. */
+        private val _liveSpeedKmh = MutableStateFlow(0f)
+        val liveSpeedKmh: StateFlow<Float> = _liveSpeedKmh.asStateFlow()
 
         fun start(context: Context) {
             val intent = Intent(context, TrackingService::class.java).apply {

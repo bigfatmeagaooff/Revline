@@ -12,8 +12,8 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "3.3.1"
+        versionCode = 10
+        versionName = "3.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

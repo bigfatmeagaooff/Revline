@@ -43,7 +43,7 @@ class LoginActivity : AppCompatActivity() {
                 is AuthOutcome.Success -> {
                     Toast.makeText(this@LoginActivity, R.string.login_success, Toast.LENGTH_SHORT).show()
                     sync.restoreTrips() // Fix 3: bring back this account's trip history
-                    finish()
+                    goToMain()
                 }
                 is AuthOutcome.Error -> {
                     setBusy(false)
@@ -56,5 +56,13 @@ class LoginActivity : AppCompatActivity() {
     private fun setBusy(busy: Boolean) {
         binding.loginButton.isEnabled = !busy
         binding.progress.visibility = if (busy) View.VISIBLE else View.GONE
+    }
+
+    private fun goToMain() {
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
+        finish()
     }
 }

@@ -33,10 +33,29 @@ class TrackingActivity : AppCompatActivity() {
         binding = ActivityTrackingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.stopDriveButton.setOnClickListener { TrackingService.stop(this) }
+        binding.stopDriveButton.setOnClickListener { confirmStop() }
 
         observeTrackingState()
         observeGForce()
+        observeLiveSpeed()
+    }
+
+    private fun confirmStop() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.stop_confirm_title)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.stop_and_save) { _, _ -> TrackingService.stop(this) }
+            .show()
+    }
+
+    private fun observeLiveSpeed() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                TrackingService.liveSpeedKmh.collectLatest { kmh ->
+                    binding.liveSpeed.text = kmh.coerceAtLeast(0f).toInt().toString()
+                }
+            }
+        }
     }
 
     private fun observeTrackingState() {

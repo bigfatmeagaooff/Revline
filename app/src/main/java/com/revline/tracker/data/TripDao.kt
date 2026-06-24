@@ -19,6 +19,20 @@ interface TripDao {
     @Query("SELECT * FROM trips ORDER BY startTime DESC")
     fun observeAll(): Flow<List<Trip>>
 
+    /**
+     * Visible trips only: finished, with real stats. Hides ghost/in-progress rows and
+     * "0 km/h · 0.0 km" junk drives from the list.
+     */
+    @Query(
+        "SELECT * FROM trips WHERE endTime IS NOT NULL AND (distanceKm > 0.1 OR topSpeedKmh > 5) " +
+            "ORDER BY startTime DESC"
+    )
+    fun observeVisible(): Flow<List<Trip>>
+
+    /** Removes leftover in-progress rows (e.g. a drive whose service was killed). */
+    @Query("DELETE FROM trips WHERE endTime IS NULL")
+    suspend fun deleteGhostTrips(): Int
+
     @Query("SELECT * FROM trips WHERE id = :tripId")
     suspend fun getById(tripId: Long): Trip?
 }

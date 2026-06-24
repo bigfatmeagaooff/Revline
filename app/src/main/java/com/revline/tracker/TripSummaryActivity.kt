@@ -1,10 +1,11 @@
 package com.revline.tracker
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.GForcePoint
 import com.revline.tracker.data.SyncRepository
@@ -13,6 +14,7 @@ import com.revline.tracker.data.Trip
 import com.revline.tracker.data.TripRepository
 import com.revline.tracker.data.UploadResult
 import com.revline.tracker.databinding.ActivityTripSummaryBinding
+import com.revline.tracker.databinding.CellStatBinding
 import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.SpeedCalculator
 import com.revline.tracker.util.TripStatsCalculator
@@ -22,18 +24,17 @@ import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Polyline
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * Post-trip stats: distance, duration, avg/top speed, the predicted-vs-actual delta,
- * the enhanced drive-detail stats, a G-force summary + timeline graph, and a
- * speed-colored route map. Read-only — used right after a drive and from history.
- *
- * Handles empty/sparse trips (too few GPS points to be meaningful, e.g. an indoor
- * smoke test): distance/speed read "—" instead of a misleading 0, the map shows a
- * placeholder, and the detail stats are omitted — while a genuinely slow-but-tracked
- * drive still shows its real (low) numbers.
+ * The "wow" screen: hero top-speed in red, a 2×3 stat grid, a speed-colored route map,
+ * a conditional G-force section, and share / re-upload actions. Handles empty/sparse and
+ * server-restored trips gracefully.
  */
 class TripSummaryActivity : AppCompatActivity() {
 
@@ -41,10 +42,10 @@ class TripSummaryActivity : AppCompatActivity() {
     private lateinit var repository: TripRepository
     private lateinit var sync: SyncRepository
 
+    private val dash get() = getString(R.string.value_dash)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // OSMDroid is configured once in RevlineApp.onCreate (user agent + cache paths),
-        // before any MapView is constructed.
         binding = ActivityTripSummaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -53,156 +54,98 @@ class TripSummaryActivity : AppCompatActivity() {
         setUpMap()
 
         val tripId = intent.getLongExtra(EXTRA_TRIP_ID, -1L)
-        if (tripId <= 0L) {
-            finish()
-            return
-        }
+        if (tripId <= 0L) { finish(); return }
 
         lifecycleScope.launch {
-            val trip = repository.getTrip(tripId)
-            if (trip == null) {
-                finish()
-                return@launch
-            }
+            val trip = repository.getTrip(tripId) ?: run { finish(); return@launch }
             val trackPoints = repository.getTrackPoints(tripId)
             val gForcePoints = repository.getGForcePoints(tripId)
             val segments = SpeedCalculator.cleanSegments(trackPoints)
-            // "Usable route" = enough confident points to be meaningful (~3+ ⇒ 2+ segments).
             val hasRoute = segments.size >= 2
+            val movingG = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
 
-            // Speed-gate G readings: only those captured while actually moving count
-            // toward the summary stats / graph / hardest-braking (Phase 3.3 Feature 1).
-            val movingGForce = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
+            val durationMillis = trip.actualDurationMinutes?.let { (it * 60_000f).toLong() }
+                ?: ((trip.endTime ?: trip.startTime) - trip.startTime)
+            val stats = TripStatsCalculator.compute(trackPoints, durationMillis, trip.distanceKm ?: 0f)
+            val gSummary = GForceCalculator.summarize(movingG)
 
             binding.restoredNote.visibility = if (trip.restoredFromServer) View.VISIBLE else View.GONE
 
-            bind(trip, hasRoute)
-            bindDetail(trip, trackPoints, hasRoute)
-            bindGForce(trip, movingGForce)
+            bindHero(trip)
+            bindGrid(trip, stats, durationMillis, movingG, gSummary)
+            bindPrediction(trip)
             renderRoute(segments, hasRoute)
+            bindGForce(movingG)
+            bindActions(trip)
             maybeUpload(trip)
-            setupReupload(trip)
         }
     }
 
-    /** Fix 2: manual re-upload for trips with real local stats (forces a corrected send). */
-    private fun setupReupload(trip: Trip) {
-        if (!sync.isLoggedIn || !sync.hasValidStats(trip)) {
-            binding.reuploadButton.visibility = View.GONE
-            return
-        }
-        binding.reuploadButton.visibility = View.VISIBLE
-        binding.reuploadButton.setOnClickListener {
-            binding.reuploadButton.isEnabled = false
-            showUploadStatus(getString(R.string.upload_in_progress))
-            lifecycleScope.launch {
-                when (val result = sync.reuploadTrip(trip.id)) {
-                    is UploadResult.Success -> {
-                        showUploadStatus(getString(R.string.upload_done))
-                        binding.reuploadButton.visibility = View.GONE
-                    }
-                    else -> {
-                        showUploadStatus(getString(R.string.upload_failed))
-                        binding.reuploadButton.isEnabled = true
-                    }
-                }
-            }
-        }
+    private fun bindHero(trip: Trip) {
+        binding.heroTopSpeed.text = trip.topSpeedKmh?.takeIf { it > 0f }?.roundToInt()?.toString() ?: dash
+        binding.heroDate.text = HERO_DATE.format(Date(trip.startTime))
+        val dist = trip.distanceKm?.let { String.format(Locale.getDefault(), "%.1f km", it) }
+        val dur = trip.actualDurationMinutes?.let { String.format(Locale.getDefault(), "%.0f min", it) }
+        binding.heroMeta.text = listOfNotNull(dist, dur).joinToString(" · ").ifBlank { dash }
     }
 
-    /** Best-effort upload to the leaderboard — the trip is already safe locally. */
-    private fun maybeUpload(trip: Trip) {
-        if (!sync.isLoggedIn) {
-            // Only nudge for trips that haven't been uploaded; stay quiet otherwise.
-            if (trip.uploadedAt == null) showUploadStatus(getString(R.string.upload_sign_in))
-            return
-        }
-        if (trip.uploadedAt != null) {
-            showUploadStatus(getString(R.string.upload_done))
-            return
-        }
-        showUploadStatus(getString(R.string.upload_in_progress))
-        lifecycleScope.launch {
-            val message = when (val result = sync.uploadTrip(trip.id)) {
-                is UploadResult.Success ->
-                    if (result.flagged) getString(R.string.upload_flagged)
-                    else getString(R.string.upload_done)
-                is UploadResult.AlreadyUploaded -> getString(R.string.upload_done)
-                is UploadResult.NotLoggedIn -> getString(R.string.upload_sign_in)
-                is UploadResult.Failed -> getString(R.string.upload_pending)
-                // No real stats yet (e.g. un-finalized) — don't nag; the re-upload button
-                // appears once there are valid stats.
-                is UploadResult.NoValidStats -> null
-            }
-            if (message == null) hideUploadStatus() else showUploadStatus(message)
-        }
+    private fun bindGrid(
+        trip: Trip,
+        stats: TripStatsCalculator.Stats,
+        durationMillis: Long,
+        movingG: List<GForcePoint>,
+        g: GForceCalculator.Summary
+    ) {
+        cell(binding.cellDistance, trip.distanceKm?.let { fmt(it, 1) }, R.string.unit_km, R.string.label_distance)
+        cell(binding.cellAvgSpeed, trip.avgSpeedKmh?.let { fmt(it, 0) }, R.string.unit_kmh, R.string.label_avg_speed)
+        cell(binding.cellDuration, trip.actualDurationMinutes?.let { fmt(it, 0) }, R.string.unit_min, R.string.label_duration)
+
+        val movingMin = ((durationMillis - stats.idleMillis).coerceAtLeast(0L)) / 60_000f
+        cell(binding.cellMovingTime, if (trip.actualDurationMinutes != null) fmt(movingMin, 0) else null,
+            R.string.unit_min, R.string.label_moving_time)
+
+        cell(binding.cellZeroHundred, stats.zeroToHundredSec?.let { fmt(it, 1) }, R.string.unit_s, R.string.label_0100)
+
+        val peakG = if (movingG.isEmpty()) null
+        else max(g.maxLateralG, max(g.maxAccelG, g.maxBrakingG))
+        cell(binding.cellPeakG, peakG?.let { fmt(it, 1) }, R.string.unit_g, R.string.label_peak_g)
     }
 
-    private fun hideUploadStatus() {
-        binding.uploadStatus.visibility = View.GONE
+    private fun cell(cell: CellStatBinding, value: String?, unitRes: Int, labelRes: Int) {
+        cell.statNumber.text = value ?: dash
+        cell.statNumber.setTextColor(
+            ContextCompat.getColor(this, if (value == null) R.color.text_muted else R.color.text_primary)
+        )
+        cell.statUnit.text = getString(unitRes)
+        cell.statLabel.text = getString(labelRes)
     }
 
-    private fun showUploadStatus(text: String) {
-        binding.uploadStatus.visibility = View.VISIBLE
-        binding.uploadStatus.text = text
-    }
-
-    private fun bind(trip: Trip, hasRoute: Boolean) {
-        binding.distanceValue.text = if (hasRoute && trip.distanceKm != null) {
-            getString(R.string.summary_distance_value, trip.distanceKm)
-        } else getString(R.string.value_dash)
-
-        // Duration is real regardless of GPS — always show it.
-        binding.durationValue.text = trip.actualDurationMinutes?.let {
-            getString(R.string.summary_duration_value, it)
-        } ?: getString(R.string.value_dash)
-
-        binding.avgSpeedValue.text = if (hasRoute && trip.avgSpeedKmh != null) {
-            getString(R.string.summary_speed_value, trip.avgSpeedKmh)
-        } else getString(R.string.value_dash)
-
-        binding.topSpeedValue.text = if (hasRoute && trip.topSpeedKmh != null) {
-            getString(R.string.summary_speed_value, trip.topSpeedKmh)
-        } else getString(R.string.value_dash)
-
-        bindPredictionDelta(trip)
-    }
-
-    private fun bindPredictionDelta(trip: Trip) {
-        val actualMinutes = trip.actualDurationMinutes
-        if (actualMinutes == null) {
+    private fun bindPrediction(trip: Trip) {
+        val actual = trip.actualDurationMinutes
+        if (actual == null) {
             binding.predictionDelta.visibility = View.GONE
             binding.predictionEntry.visibility = View.GONE
             return
         }
-
-        // No prediction yet (0 = not set) → offer the optional inline entry, hide the banner.
         if (trip.predictedMinutes <= 0) {
             binding.predictionDelta.visibility = View.GONE
             showPredictionEntry(trip)
             return
         }
         binding.predictionEntry.visibility = View.GONE
-
         val predicted = trip.predictedMinutes
-        val actualRounded = actualMinutes.roundToInt()
+        val actualRounded = actual.roundToInt()
         val delta = actualRounded - predicted
         val deltaText = when {
             delta > 0 -> getString(R.string.delta_over, delta)
             delta < 0 -> getString(R.string.delta_under, abs(delta))
             else -> getString(R.string.delta_exact)
         }
-
         binding.predictionDelta.visibility = View.VISIBLE
-        binding.predictionDelta.text = getString(
-            R.string.summary_prediction,
-            predicted,
-            actualRounded,
-            deltaText
-        )
+        binding.predictionDelta.text =
+            getString(R.string.summary_prediction, predicted, actualRounded, deltaText)
     }
 
-    /** Lightweight inline "add a Maps prediction" entry; one-time, then re-binds the banner. */
     private fun showPredictionEntry(trip: Trip) {
         binding.predictionEntry.visibility = View.VISIBLE
         binding.addPredictionButton.setOnClickListener {
@@ -215,80 +158,94 @@ class TripSummaryActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val updated = trip.copy(predictedMinutes = minutes)
                 repository.updateTrip(updated)
-                bindPredictionDelta(updated)
+                bindPrediction(updated)
             }
         }
     }
 
-    // --- Enhanced drive-detail stats (Feature 3) ---
-
-    private fun bindDetail(trip: Trip, trackPoints: List<TrackPoint>, hasRoute: Boolean) {
-        if (!hasRoute) {
-            binding.detailSection.visibility = View.GONE
-            return
-        }
-        binding.detailSection.visibility = View.VISIBLE
-
-        val durationMillis = trip.actualDurationMinutes?.let { (it * 60_000f).toLong() }
-            ?: ((trip.endTime ?: trip.startTime) - trip.startTime)
-        val stats = TripStatsCalculator.compute(
-            points = trackPoints,
-            totalDurationMillis = durationMillis,
-            distanceKm = trip.distanceKm ?: 0f
-        )
-
-        binding.idleValue.text = formatDurationShort(stats.idleMillis)
-
-        setOptionalRow(
-            binding.rowMovingAvg, binding.movingAvgValue,
-            stats.movingAvgKmh?.let { getString(R.string.summary_speed_value, it) }
-        )
-        setOptionalRow(
-            binding.rowZeroHundred, binding.zeroHundredValue,
-            stats.zeroToHundredSec?.let { getString(R.string.detail_seconds_value, it) }
-        )
-        setOptionalRow(
-            binding.rowZeroSixty, binding.zeroSixtyValue,
-            stats.zeroToSixtySec?.let { getString(R.string.detail_seconds_value, it) }
-        )
-
-        binding.longestStretchLabel.text =
-            getString(R.string.label_longest_stretch, stats.longestStretchThresholdKmh)
-        setOptionalRow(
-            binding.rowLongestStretch, binding.longestStretchValue,
-            if (stats.longestStretchKm > 0f) {
-                getString(R.string.detail_distance_value, stats.longestStretchKm)
-            } else null
-        )
-    }
-
-    // --- G-force ---
-
-    private fun bindGForce(trip: Trip, points: List<GForcePoint>) {
-        if (points.isEmpty()) {
+    private fun bindGForce(movingG: List<GForcePoint>) {
+        if (movingG.isEmpty()) {
             binding.gforceSection.visibility = View.GONE
             return
         }
         binding.gforceSection.visibility = View.VISIBLE
-
-        val summary = GForceCalculator.summarize(points)
-        binding.maxLateralValue.text = getString(R.string.summary_g_value, summary.maxLateralG)
-        binding.maxAccelValue.text = getString(R.string.summary_g_value, summary.maxAccelG)
-        binding.maxBrakingValue.text = getString(R.string.summary_g_value, summary.maxBrakingG)
-        binding.gforceGraph.setData(points)
-
-        val hardest = GForceCalculator.hardestBraking(points)
+        binding.gforceGraph.setData(movingG)
+        val hardest = GForceCalculator.hardestBraking(movingG)
         if (hardest != null) {
-            val offset = hardest.timestamp - trip.startTime
             binding.hardestBrakingValue.visibility = View.VISIBLE
-            binding.hardestBrakingValue.text = getString(
-                R.string.hardest_braking_callout,
-                hardest.forwardG, // already negative — renders as e.g. "-0.71 G"
-                formatOffset(offset)
-            )
+            binding.hardestBrakingValue.text =
+                getString(R.string.hardest_braking_simple, abs(hardest.forwardG))
         } else {
             binding.hardestBrakingValue.visibility = View.GONE
         }
+    }
+
+    private fun bindActions(trip: Trip) {
+        binding.shareButton.setOnClickListener { share(trip) }
+        if (sync.isLoggedIn && sync.hasValidStats(trip)) {
+            binding.reuploadButton.visibility = View.VISIBLE
+            binding.reuploadButton.setOnClickListener { triggerReupload(trip) }
+        } else {
+            binding.reuploadButton.visibility = View.GONE
+        }
+    }
+
+    private fun share(trip: Trip) {
+        val text = getString(
+            R.string.share_text,
+            HERO_DATE.format(Date(trip.startTime)),
+            trip.topSpeedKmh ?: 0f,
+            trip.distanceKm ?: 0f
+        )
+        startActivity(
+            Intent.createChooser(
+                Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text),
+                getString(R.string.share)
+            )
+        )
+    }
+
+    private fun triggerReupload(trip: Trip) {
+        binding.reuploadButton.isEnabled = false
+        lifecycleScope.launch {
+            when (sync.reuploadTrip(trip.id)) {
+                is UploadResult.Success -> {
+                    showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                    binding.reuploadButton.visibility = View.GONE
+                }
+                else -> {
+                    showStrip(getString(R.string.upload_failed_strip), R.color.warning, retry = true) { triggerReupload(trip) }
+                    binding.reuploadButton.isEnabled = true
+                }
+            }
+        }
+    }
+
+    private fun maybeUpload(trip: Trip) {
+        when {
+            trip.restoredFromServer -> binding.uploadStatus.visibility = View.GONE
+            !sync.isLoggedIn -> binding.uploadStatus.visibility = View.GONE
+            trip.uploadedAt != null ->
+                showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+            else -> lifecycleScope.launch {
+                when (val r = sync.uploadTrip(trip.id)) {
+                    is UploadResult.Success ->
+                        showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                    is UploadResult.AlreadyUploaded ->
+                        showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                    is UploadResult.Failed ->
+                        showStrip(getString(R.string.upload_failed_strip), R.color.warning, retry = true) { triggerReupload(trip) }
+                    else -> binding.uploadStatus.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun showStrip(text: String, bgColor: Int, retry: Boolean, onRetry: (() -> Unit)? = null) {
+        binding.uploadStatus.visibility = View.VISIBLE
+        binding.uploadStatus.text = text
+        binding.uploadStatus.setBackgroundColor(ContextCompat.getColor(this, bgColor))
+        binding.uploadStatus.setOnClickListener(if (retry && onRetry != null) View.OnClickListener { onRetry() } else null)
     }
 
     // --- Route map ---
@@ -296,8 +253,7 @@ class TripSummaryActivity : AppCompatActivity() {
     private fun setUpMap() {
         binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
         binding.mapView.setMultiTouchControls(true)
-        binding.mapView.overlays.add(CopyrightOverlay(this)) // "© OpenStreetMap contributors"
-        // Let map gestures win over the surrounding ScrollView.
+        binding.mapView.overlays.add(CopyrightOverlay(this))
         binding.mapView.setOnTouchListener { v, _ ->
             v.parent?.requestDisallowInterceptTouchEvent(true)
             false
@@ -306,7 +262,6 @@ class TripSummaryActivity : AppCompatActivity() {
 
     private fun renderRoute(segments: List<SpeedCalculator.Segment>, hasRoute: Boolean) {
         if (!hasRoute) {
-            // Don't show a world-zoomed default map for a trip with no usable route.
             binding.mapView.visibility = View.GONE
             binding.mapPlaceholder.visibility = View.VISIBLE
             return
@@ -314,7 +269,6 @@ class TripSummaryActivity : AppCompatActivity() {
         binding.mapView.visibility = View.VISIBLE
         binding.mapPlaceholder.visibility = View.GONE
 
-        // Relative color range within this trip (percentiles avoid outliers skewing it).
         val sortedSpeeds = segments.map { it.speedKmh }.sorted()
         val lo = percentile(sortedSpeeds, 5.0)
         val hi = percentile(sortedSpeeds, 95.0)
@@ -323,37 +277,23 @@ class TripSummaryActivity : AppCompatActivity() {
         segments.forEachIndexed { index, seg ->
             if (index == 0) geoPoints.add(GeoPoint(seg.startLat, seg.startLon))
             geoPoints.add(GeoPoint(seg.endLat, seg.endLon))
-
             val t = if (hi > lo) ((seg.speedKmh - lo) / (hi - lo)).coerceIn(0f, 1f) else 0.5f
             val line = Polyline(binding.mapView).apply {
                 outlinePaint.color = speedColor(t)
                 outlinePaint.strokeWidth = 10f
-                setPoints(
-                    listOf(
-                        GeoPoint(seg.startLat, seg.startLon),
-                        GeoPoint(seg.endLat, seg.endLon)
-                    )
-                )
+                setPoints(listOf(GeoPoint(seg.startLat, seg.startLon), GeoPoint(seg.endLat, seg.endLon)))
             }
             binding.mapView.overlays.add(line)
         }
-
         val bbox = BoundingBox.fromGeoPoints(geoPoints).increaseByScale(1.3f)
-        binding.mapView.post {
-            binding.mapView.zoomToBoundingBox(bbox, false, 48)
-        }
+        binding.mapView.post { binding.mapView.zoomToBoundingBox(bbox, false, 48) }
         binding.mapView.invalidate()
     }
 
-    /** Green (slow) → yellow → red (fast) for t in [0,1]. */
-    private fun speedColor(t: Float): Int {
-        return if (t < 0.5f) {
-            val k = t / 0.5f
-            Color.rgb((255 * k).roundToInt(), 255, 0)
-        } else {
-            val k = (t - 0.5f) / 0.5f
-            Color.rgb(255, (255 * (1 - k)).roundToInt(), 0)
-        }
+    private fun speedColor(t: Float): Int = if (t < 0.5f) {
+        Color.rgb((255 * (t / 0.5f)).roundToInt(), 255, 0)
+    } else {
+        Color.rgb(255, (255 * (1 - (t - 0.5f) / 0.5f)).roundToInt(), 0)
     }
 
     private fun percentile(sorted: List<Float>, p: Double): Float {
@@ -362,38 +302,14 @@ class TripSummaryActivity : AppCompatActivity() {
         return sorted[idx]
     }
 
-    private fun setOptionalRow(row: View, valueView: TextView, text: String?) {
-        if (text == null) {
-            row.visibility = View.GONE
-        } else {
-            valueView.text = text
-            row.visibility = View.VISIBLE
-        }
-    }
+    private fun fmt(value: Float, decimals: Int) =
+        String.format(Locale.getDefault(), "%.${decimals}f", value)
 
-    /** e.g. 252_000 ms → "4m 12s". */
-    private fun formatDurationShort(millis: Long): String {
-        val totalSeconds = millis / 1000
-        return "${totalSeconds / 60}m ${totalSeconds % 60}s"
-    }
-
-    /** Offset into the drive as mm:ss (minutes can exceed 59). */
-    private fun formatOffset(millis: Long): String {
-        val totalSeconds = (millis / 1000).coerceAtLeast(0)
-        return getString(R.string.elapsed_format, totalSeconds / 60, totalSeconds % 60)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.mapView.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        binding.mapView.onPause()
-    }
+    override fun onResume() { super.onResume(); binding.mapView.onResume() }
+    override fun onPause() { super.onPause(); binding.mapView.onPause() }
 
     companion object {
         const val EXTRA_TRIP_ID = "extra_trip_id"
+        private val HERO_DATE = SimpleDateFormat("EEE d MMM · h:mm a", Locale.getDefault())
     }
 }
