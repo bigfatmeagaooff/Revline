@@ -6,10 +6,15 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyWindowInsets()
 
         repository = TripRepository.getInstance(this)
 
@@ -93,6 +99,25 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch { SyncRepository.getInstance(this@MainActivity).sendHeartbeat() }
+    }
+
+    /**
+     * Edge-to-edge inset handling: top inset → root top padding (content clears the
+     * status bar); bottom nav-bar inset → extra bottom margin on the Start Drive button
+     * so it sits above the nav bar rather than behind it.
+     */
+    private fun applyWindowInsets() {
+        val baseButtonBottom =
+            (binding.startDriveButton.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(top = bars.top)
+            binding.startDriveButton.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = baseButtonBottom + bars.bottom
+            }
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun observeTrips() {
