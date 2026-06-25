@@ -141,6 +141,17 @@
     <string name="recent_trips">Recent trips</string>
     <string name="no_trips_yet">No trips yet</string>
     <string name="like">Like</string>
+    <!-- Comments -->
+    <string name="comments_title">Comments</string>
+    <string name="comments_empty">No comments yet.\nBe the first to say something.</string>
+    <string name="comment_hint">Add a comment…</string>
+    <string name="comment_send">Send</string>
+    <string name="comment_sign_in">Sign in to comment</string>
+    <string name="comment_failed">Couldn\'t post — check connection</string>
+    <string name="comment_delete_confirm">Delete this comment?</string>
+    <string name="view_comments">Comments</string>
+    <string name="view_comments_count">Comments (%1$d)</string>
+    <string name="comments_after_upload">Comments appear once this drive is uploaded</string>
     <plurals name="followers_count">
         <item quantity="one">%d follower</item>
         <item quantity="other">%d followers</item>

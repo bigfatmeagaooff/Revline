@@ -67,35 +67,72 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Like row -->
+        <!-- Like + comment row -->
         <LinearLayout
-            android:id="@+id/likeRow"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="4dp"
-            android:paddingVertical="2dp">
+            android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/heartIcon"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="@string/like"
-                android:src="@drawable/ic_heart_outline"
-                app:tint="@color/text_secondary" />
-
-            <TextView
-                android:id="@+id/likeCount"
+            <LinearLayout
+                android:id="@+id/likeRow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                tools:text="3" />
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="4dp"
+                android:paddingVertical="2dp">
+
+                <ImageView
+                    android:id="@+id/heartIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@string/like"
+                    android:src="@drawable/ic_heart_outline"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/likeCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="3" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/commentRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="4dp"
+                android:paddingVertical="2dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@string/comments_title"
+                    android:src="@drawable/ic_comment"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/commentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="2" />
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>

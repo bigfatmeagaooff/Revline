@@ -117,6 +117,9 @@ class UserProfileActivity : AppCompatActivity() {
             val car = listOfNotNull(t.carYear?.toString(), t.carMake, t.carModel).joinToString(" ")
             row.findViewById<TextView>(R.id.car).text = car.ifBlank { getString(R.string.unknown_car) }
             bindLike(row, t)
+            row.findViewById<TextView>(R.id.commentCount).text =
+                if (t.commentCount > 0) t.commentCount.toString() else ""
+            row.findViewById<View>(R.id.commentRow).setOnClickListener { openComments(t.id) }
             binding.recentTripsContainer.addView(row)
         }
     }
@@ -162,6 +165,13 @@ class UserProfileActivity : AppCompatActivity() {
                 busy = false
             }
         }
+    }
+
+    private fun openComments(serverTripId: String) {
+        startActivity(
+            android.content.Intent(this, CommentsActivity::class.java)
+                .putExtra(CommentsActivity.EXTRA_TRIP_ID, serverTripId)
+        )
     }
 
     private fun setStat(view: TextView, value: String) { view.text = value }

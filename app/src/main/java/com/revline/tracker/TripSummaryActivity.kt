@@ -76,8 +76,25 @@ class TripSummaryActivity : AppCompatActivity() {
             bindPrediction(trip)
             renderRoute(segments, hasRoute)
             bindGForce(movingG)
+            bindComments(trip)
             bindActions(trip)
             maybeUpload(trip)
+        }
+    }
+
+    /** Show a Comments entry only once the trip has a server id (i.e. it's been uploaded). */
+    private fun bindComments(trip: Trip) {
+        val serverId = trip.serverTripId
+        if (serverId.isNullOrBlank()) {
+            binding.commentsSection.visibility = View.GONE
+            return
+        }
+        binding.commentsSection.visibility = View.VISIBLE
+        binding.viewCommentsButton.setOnClickListener {
+            startActivity(
+                Intent(this, CommentsActivity::class.java)
+                    .putExtra(CommentsActivity.EXTRA_TRIP_ID, serverId)
+            )
         }
     }
 

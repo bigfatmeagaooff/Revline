@@ -86,6 +86,11 @@
             android:name=".UserProfileActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".CommentsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <service
             android:name=".service.TrackingService"
             android:exported="false"

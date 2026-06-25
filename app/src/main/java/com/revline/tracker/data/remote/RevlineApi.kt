@@ -57,6 +57,20 @@ interface RevlineApi {
     @DELETE("api/trips/{id}/like")
     suspend fun unlikeTrip(@Path("id") id: String): Response<LikeResponse>
 
+    // --- Social: comments ---
+
+    @GET("api/trips/{id}/comments")
+    suspend fun getComments(@Path("id") id: String): Response<CommentsResponse>
+
+    @POST("api/trips/{id}/comments")
+    suspend fun postComment(@Path("id") id: String, @Body body: CommentRequest): Response<CommentResponse>
+
+    @DELETE("api/trips/{id}/comments/{commentId}")
+    suspend fun deleteComment(
+        @Path("id") id: String,
+        @Path("commentId") commentId: String
+    ): Response<OkResponse>
+
     @GET("api/leaderboard/top-speed")
     suspend fun topSpeed(): Response<LeaderboardResponse>
 

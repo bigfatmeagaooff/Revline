@@ -72,6 +72,7 @@ data class MineTripsResponse(
 )
 
 data class MineTrip(
+    val id: String? = null,
     @SerializedName("device_trip_id") val deviceTripId: String?,
     @SerializedName("start_time") val startTime: String?,
     @SerializedName("end_time") val endTime: String?,
@@ -183,7 +184,8 @@ data class RemoteTripSummary(
     @SerializedName("car_year") val carYear: Int?,
     @SerializedName("start_time") val startTime: String?,
     @SerializedName("like_count") val likeCount: Int = 0,
-    val liked: Boolean = false
+    val liked: Boolean = false,
+    @SerializedName("comment_count") val commentCount: Int = 0
 )
 
 // --- Social: likes (Phase 4 Feature 2) ---
@@ -193,6 +195,24 @@ data class LikeResponse(
     val liked: Boolean = false,
     val likeCount: Int = 0
 )
+
+// --- Social: comments (Phase 4 Feature 3) ---
+
+data class CommentsResponse(val comments: List<Comment>)
+
+data class Comment(
+    val id: String,
+    @SerializedName("user_id") val userId: String,
+    val username: String,
+    @SerializedName("avatar_url") val avatarUrl: String?,
+    val body: String,
+    @SerializedName("created_at") val createdAt: String?,
+    @SerializedName("is_mine") val isMine: Boolean = false
+)
+
+data class CommentRequest(val body: String)
+
+data class CommentResponse(val comment: Comment)
 
 // --- Admin dashboard (server returns camelCase for these) ---
 

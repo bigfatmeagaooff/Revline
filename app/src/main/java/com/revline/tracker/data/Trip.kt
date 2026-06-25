@@ -55,6 +55,9 @@ data class Trip(
      */
     val restoredFromServer: Boolean = false,
 
+    /** Server-side trip UUID, set once uploaded; null until then. Enables likes/comments. */
+    val serverTripId: String? = null,
+
     // future: val carId: String? = null  // FK to a future Car table (make/model/year). Not implemented in v1.
 ) {
     /**

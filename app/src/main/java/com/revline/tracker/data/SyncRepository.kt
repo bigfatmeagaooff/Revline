@@ -162,7 +162,9 @@ class SyncRepository private constructor(
             val resp = api.uploadTrip(request)
             val body = resp.body()
             if (resp.isSuccessful && body != null) {
-                tripRepository.updateTrip(trip.copy(uploadedAt = System.currentTimeMillis()))
+                tripRepository.updateTrip(
+                    trip.copy(uploadedAt = System.currentTimeMillis(), serverTripId = body.tripId)
+                )
                 UploadResult.Success(flagged = body.flagged, deduped = body.deduped)
             } else if (resp.code() == 401) {
                 UploadResult.NotLoggedIn
@@ -218,7 +220,8 @@ class SyncRepository private constructor(
                     topSpeedKmh = st.topSpeedKmh,
                     actualDurationMinutes = st.actualDurationMinutes,
                     uploadedAt = System.currentTimeMillis(),
-                    restoredFromServer = true
+                    restoredFromServer = true,
+                    serverTripId = st.id
                 )
                 tripRepository.createTrip(trip)
                 restored++
@@ -273,6 +276,15 @@ class SyncRepository private constructor(
 
     suspend fun unlikeTrip(id: String): Result<com.revline.tracker.data.remote.LikeResponse> =
         social { api.unlikeTrip(id) }
+
+    suspend fun getComments(id: String): Result<List<com.revline.tracker.data.remote.Comment>> =
+        social { api.getComments(id) }.map { it.comments }
+
+    suspend fun postComment(id: String, body: String): Result<com.revline.tracker.data.remote.Comment> =
+        social { api.postComment(id, com.revline.tracker.data.remote.CommentRequest(body)) }.map { it.comment }
+
+    suspend fun deleteComment(tripId: String, commentId: String): Result<Boolean> =
+        social { api.deleteComment(tripId, commentId) }.map { it.ok }
 
     private suspend fun <T> social(call: suspend () -> Response<T>): Result<T> =
         withContext(Dispatchers.IO) {
