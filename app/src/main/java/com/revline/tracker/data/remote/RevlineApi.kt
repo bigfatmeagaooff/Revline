@@ -49,6 +49,14 @@ interface RevlineApi {
     @GET("api/users/{id}/trips")
     suspend fun userTrips(@Path("id") id: String): Response<RemoteTripsResponse>
 
+    // --- Social: likes ---
+
+    @POST("api/trips/{id}/like")
+    suspend fun likeTrip(@Path("id") id: String): Response<LikeResponse>
+
+    @DELETE("api/trips/{id}/like")
+    suspend fun unlikeTrip(@Path("id") id: String): Response<LikeResponse>
+
     @GET("api/leaderboard/top-speed")
     suspend fun topSpeed(): Response<LeaderboardResponse>
 

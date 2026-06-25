@@ -12,54 +12,92 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:paddingHorizontal="16dp"
         android:paddingVertical="12dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="MON 24 JUN" />
+
+                <TextView
+                    android:id="@+id/car"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_regular"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="2019 Subaru WRX" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/date"
+                android:id="@+id/topSpeed"
+                style="@style/Text.Display"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                tools:text="MON 24 JUN" />
+                android:textColor="@color/accent_red"
+                android:textSize="28sp"
+                tools:text="118" />
 
             <TextView
-                android:id="@+id/car"
+                style="@style/Text.Unit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                tools:text="2019 Subaru WRX" />
+                android:layout_marginStart="3dp"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="3dp"
+                android:text="@string/unit_kmh"
+                android:textSize="12sp" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/topSpeed"
-            style="@style/Text.Display"
+        <!-- Like row -->
+        <LinearLayout
+            android:id="@+id/likeRow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/accent_red"
-            android:textSize="28sp"
-            tools:text="118" />
+            android:layout_marginTop="10dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp">
 
-        <TextView
-            style="@style/Text.Unit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="3dp"
-            android:text="@string/unit_kmh"
-            android:textSize="12sp" />
+            <ImageView
+                android:id="@+id/heartIcon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:contentDescription="@string/like"
+                android:src="@drawable/ic_heart_outline"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/likeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:fontFamily="@font/inter_medium"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                tools:text="3" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

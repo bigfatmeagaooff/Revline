@@ -140,6 +140,7 @@
     <string name="profile_following">Following</string>
     <string name="recent_trips">Recent trips</string>
     <string name="no_trips_yet">No trips yet</string>
+    <string name="like">Like</string>
     <plurals name="followers_count">
         <item quantity="one">%d follower</item>
         <item quantity="other">%d followers</item>

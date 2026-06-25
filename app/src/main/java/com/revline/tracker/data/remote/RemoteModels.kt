@@ -181,7 +181,17 @@ data class RemoteTripSummary(
     @SerializedName("car_make") val carMake: String?,
     @SerializedName("car_model") val carModel: String?,
     @SerializedName("car_year") val carYear: Int?,
-    @SerializedName("start_time") val startTime: String?
+    @SerializedName("start_time") val startTime: String?,
+    @SerializedName("like_count") val likeCount: Int = 0,
+    val liked: Boolean = false
+)
+
+// --- Social: likes (Phase 4 Feature 2) ---
+
+data class LikeResponse(
+    val ok: Boolean = false,
+    val liked: Boolean = false,
+    val likeCount: Int = 0
 )
 
 // --- Admin dashboard (server returns camelCase for these) ---

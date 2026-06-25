@@ -268,6 +268,12 @@ class SyncRepository private constructor(
     suspend fun getUserTrips(id: String): Result<List<com.revline.tracker.data.remote.RemoteTripSummary>> =
         social { api.userTrips(id) }.map { it.trips }
 
+    suspend fun likeTrip(id: String): Result<com.revline.tracker.data.remote.LikeResponse> =
+        social { api.likeTrip(id) }
+
+    suspend fun unlikeTrip(id: String): Result<com.revline.tracker.data.remote.LikeResponse> =
+        social { api.unlikeTrip(id) }
+
     private suspend fun <T> social(call: suspend () -> Response<T>): Result<T> =
         withContext(Dispatchers.IO) {
             try {

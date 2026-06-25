@@ -116,7 +116,51 @@ class UserProfileActivity : AppCompatActivity() {
                 t.topSpeedKmh?.roundToInt()?.toString() ?: getString(R.string.value_dash)
             val car = listOfNotNull(t.carYear?.toString(), t.carMake, t.carModel).joinToString(" ")
             row.findViewById<TextView>(R.id.car).text = car.ifBlank { getString(R.string.unknown_car) }
+            bindLike(row, t)
             binding.recentTripsContainer.addView(row)
+        }
+    }
+
+    private fun bindLike(row: View, t: RemoteTripSummary) {
+        val heart = row.findViewById<android.widget.ImageView>(R.id.heartIcon)
+        val countView = row.findViewById<TextView>(R.id.likeCount)
+        val likeRow = row.findViewById<View>(R.id.likeRow)
+        var liked = t.liked
+        var count = t.likeCount
+        var busy = false
+
+        fun render() {
+            heart.setImageResource(if (liked) R.drawable.ic_heart else R.drawable.ic_heart_outline)
+            val tint = if (liked) R.color.accent_red else R.color.text_secondary
+            heart.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, tint))
+            countView.text = if (count > 0) count.toString() else ""
+            countView.setTextColor(
+                ContextCompat.getColor(this, if (liked) R.color.text_primary else R.color.text_secondary)
+            )
+        }
+        render()
+
+        likeRow.setOnClickListener {
+            if (busy) return@setOnClickListener
+            busy = true
+            // Optimistic update; revert on failure.
+            val wasLiked = liked
+            liked = !liked
+            count = (count + if (liked) 1 else -1).coerceAtLeast(0)
+            render()
+            lifecycleScope.launch {
+                val result = if (wasLiked) sync.unlikeTrip(t.id) else sync.likeTrip(t.id)
+                result.onSuccess {
+                    liked = it.liked
+                    count = it.likeCount
+                    render()
+                }.onFailure {
+                    liked = wasLiked
+                    count = (count + if (wasLiked) 1 else -1).coerceAtLeast(0)
+                    render()
+                }
+                busy = false
+            }
         }
     }
 
