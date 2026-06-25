@@ -82,6 +82,52 @@
                     android:layout_weight="1" />
             </LinearLayout>
 
+            <!-- Follower / following counts -->
+            <LinearLayout
+                android:id="@+id/followsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/followersCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:fontFamily="@font/inter_medium"
+                    android:padding="4dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    tools:text="12 Followers" />
+
+                <TextView
+                    android:id="@+id/followingCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:fontFamily="@font/inter_medium"
+                    android:padding="4dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    tools:text="8 Following" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/findPeople"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:fontFamily="@font/inter_medium"
+                android:padding="4dp"
+                android:text="@string/find_people"
+                android:textColor="@color/accent_red"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
             <!-- Signed-out actions -->
             <LinearLayout
                 android:id="@+id/loggedOutButtons"

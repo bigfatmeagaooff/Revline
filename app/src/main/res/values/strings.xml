@@ -124,6 +124,26 @@
 
     <!-- My Car -->
     <string name="account">Account</string>
+    <!-- Social -->
+    <string name="follow">Follow</string>
+    <string name="following">Following</string>
+    <string name="unfollow">Unfollow</string>
+    <string name="unfollow_confirm">Unfollow?</string>
+    <string name="count_followers">%1$d Followers</string>
+    <string name="count_following">%1$d Following</string>
+    <string name="find_people">Find people →</string>
+    <string name="search_hint">Search username</string>
+    <string name="search_empty">No users found</string>
+    <string name="followers_title">Followers</string>
+    <string name="following_title">Following</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
+    <string name="recent_trips">Recent trips</string>
+    <string name="no_trips_yet">No trips yet</string>
+    <plurals name="followers_count">
+        <item quantity="one">%d follower</item>
+        <item quantity="other">%d followers</item>
+    </plurals>
     <string name="profile_drives">Drives</string>
     <string name="profile_top">Top km/h</string>
     <string name="profile_best">Best km</string>

@@ -86,6 +86,7 @@ class SyncRepository private constructor(
                 tokenStore.save(
                     body.accessToken,
                     body.refreshToken,
+                    body.user.id,
                     body.user.username,
                     body.user.email,
                     body.user.isAdmin
@@ -244,6 +245,40 @@ class SyncRepository private constructor(
             null
         }
     }
+
+    // --- Social: following (Phase 4 Feature 1) ---
+
+    val currentUserId: String? get() = tokenStore.userId
+
+    suspend fun followUser(id: String): Result<Boolean> = social { api.followUser(id) }.map { it.isFollowing }
+    suspend fun unfollowUser(id: String): Result<Boolean> = social { api.unfollowUser(id) }.map { it.isFollowing }
+
+    suspend fun searchUsers(q: String): Result<List<com.revline.tracker.data.remote.UserSummary>> =
+        social { api.searchUsers(q) }.map { it.users }
+
+    suspend fun getFollowers(id: String): Result<List<com.revline.tracker.data.remote.UserSummary>> =
+        social { api.followers(id, null) }.map { it.users }
+
+    suspend fun getFollowing(id: String): Result<List<com.revline.tracker.data.remote.UserSummary>> =
+        social { api.following(id, null) }.map { it.users }
+
+    suspend fun getUserProfile(id: String): Result<com.revline.tracker.data.remote.PublicProfile> =
+        social { api.userProfile(id) }
+
+    suspend fun getUserTrips(id: String): Result<List<com.revline.tracker.data.remote.RemoteTripSummary>> =
+        social { api.userTrips(id) }.map { it.trips }
+
+    private suspend fun <T> social(call: suspend () -> Response<T>): Result<T> =
+        withContext(Dispatchers.IO) {
+            try {
+                val resp = call()
+                val body = resp.body()
+                if (resp.isSuccessful && body != null) Result.success(body)
+                else Result.failure(Exception(errorMessage(resp)))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
 
     private fun parseIsoMillis(iso: String?): Long? =
         iso?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull() }

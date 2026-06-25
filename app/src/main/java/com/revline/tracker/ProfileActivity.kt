@@ -36,6 +36,7 @@ class ProfileActivity : AppCompatActivity() {
         binding.loginButton.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
         binding.registerButton.setOnClickListener { startActivity(Intent(this, RegisterActivity::class.java)) }
         binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminDashboardActivity::class.java)) }
+        binding.findPeople.setOnClickListener { startActivity(Intent(this, SearchActivity::class.java)) }
         binding.logoutButton.setOnClickListener {
             lifecycleScope.launch {
                 sync.logout()
@@ -67,16 +68,41 @@ class ProfileActivity : AppCompatActivity() {
             binding.loggedOutButtons.visibility = View.GONE
             binding.logoutButton.visibility = View.VISIBLE
             binding.adminButton.visibility = if (sync.isAdmin) View.VISIBLE else View.GONE
+            binding.findPeople.visibility = View.VISIBLE
             loadStats()
+            loadFollowCounts()
         } else {
             binding.avatar.text = "?"
             binding.username.text = getString(R.string.not_signed_in)
             binding.userEmail.visibility = View.GONE
             binding.statsRow.visibility = View.GONE
+            binding.followsRow.visibility = View.GONE
+            binding.findPeople.visibility = View.GONE
             binding.loggedOutButtons.visibility = View.VISIBLE
             binding.logoutButton.visibility = View.GONE
             binding.adminButton.visibility = View.GONE
         }
+    }
+
+    private fun loadFollowCounts() {
+        val myId = sync.currentUserId ?: return
+        lifecycleScope.launch {
+            sync.getUserProfile(myId).onSuccess { p ->
+                binding.followsRow.visibility = View.VISIBLE
+                binding.followersCount.text = getString(R.string.count_followers, p.followerCount)
+                binding.followingCount.text = getString(R.string.count_following, p.followingCount)
+                binding.followersCount.setOnClickListener { openList(myId, UserListActivity.MODE_FOLLOWERS) }
+                binding.followingCount.setOnClickListener { openList(myId, UserListActivity.MODE_FOLLOWING) }
+            }
+        }
+    }
+
+    private fun openList(userId: String, mode: String) {
+        startActivity(
+            Intent(this, UserListActivity::class.java)
+                .putExtra(UserListActivity.EXTRA_USER_ID, userId)
+                .putExtra(UserListActivity.EXTRA_MODE, mode)
+        )
     }
 
     private fun loadStats() {

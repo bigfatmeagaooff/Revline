@@ -74,6 +74,18 @@
             android:name=".ui.AdminDashboardActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".UserListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+
         <service
             android:name=".service.TrackingService"
             android:exported="false"

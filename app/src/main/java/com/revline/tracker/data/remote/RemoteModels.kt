@@ -138,6 +138,52 @@ data class VerdictResponse(
 
 data class OkResponse(val ok: Boolean = false)
 
+// --- Social: following (Phase 4 Feature 1) ---
+
+data class UserSummary(
+    val id: String,
+    val username: String,
+    @SerializedName("avatar_url") val avatarUrl: String?,
+    @SerializedName("follower_count") val followerCount: Int = 0,
+    @SerializedName("is_following") val isFollowing: Boolean = false
+)
+
+data class UserListResponse(
+    val users: List<UserSummary>,
+    @SerializedName("next_cursor") val nextCursor: String?
+)
+
+data class FollowResponse(
+    val ok: Boolean = false,
+    @SerializedName("is_following") val isFollowing: Boolean = false
+)
+
+/** Public profile (server returns camelCase). */
+data class PublicProfile(
+    val id: String,
+    val username: String,
+    val avatarUrl: String?,
+    val followerCount: Int = 0,
+    val followingCount: Int = 0,
+    val tripCount: Int = 0,
+    val bestTopSpeedKmh: Float = 0f,
+    val isFollowing: Boolean = false,
+    val isMe: Boolean = false
+)
+
+data class RemoteTripsResponse(val trips: List<RemoteTripSummary>)
+
+data class RemoteTripSummary(
+    val id: String,
+    @SerializedName("top_speed_kmh") val topSpeedKmh: Float?,
+    @SerializedName("distance_km") val distanceKm: Float?,
+    @SerializedName("actual_duration_minutes") val actualDurationMinutes: Float?,
+    @SerializedName("car_make") val carMake: String?,
+    @SerializedName("car_model") val carModel: String?,
+    @SerializedName("car_year") val carYear: Int?,
+    @SerializedName("start_time") val startTime: String?
+)
+
 // --- Admin dashboard (server returns camelCase for these) ---
 
 data class AdminStats(
