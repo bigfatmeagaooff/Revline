@@ -14,6 +14,7 @@ import com.revline.tracker.util.CarProfile
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.revline.tracker.util.EdgeToEdge
 
 /** Profile: avatar + stats header, My Car, account actions, and a conditional admin entry. */
 class ProfileActivity : AppCompatActivity() {
@@ -25,6 +26,7 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         val car = CarProfile.load(this)

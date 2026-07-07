@@ -15,6 +15,7 @@ import com.revline.tracker.data.remote.UserSummary
 import com.revline.tracker.databinding.ActivitySearchBinding
 import com.revline.tracker.ui.UserAdapter
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /** Debounced username search with inline follow toggles. */
 class SearchActivity : AppCompatActivity() {
@@ -31,6 +32,7 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         binding.backButton.setOnClickListener { finish() }
@@ -60,7 +62,12 @@ class SearchActivity : AppCompatActivity() {
             return
         }
         lifecycleScope.launch {
-            sync.searchUsers(q).onSuccess { submit(it) }.onFailure { submit(emptyList()) }
+            val result = sync.searchUsers(q)
+            // Ignore responses for stale queries — a slow earlier request must not
+            // overwrite the results of what's currently typed.
+            val current = binding.searchInput.text?.toString()?.trim().orEmpty()
+            if (current != q) return@launch
+            result.onSuccess { submit(it) }.onFailure { submit(emptyList()) }
         }
     }
 
@@ -72,6 +79,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun toggleFollow(user: UserSummary) {
+        if (!sync.isLoggedIn) {
+            android.widget.Toast.makeText(this, R.string.sign_in_to_follow, android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         lifecycleScope.launch {
             val result = if (user.isFollowing) sync.unfollowUser(user.id) else sync.followUser(user.id)
             result.onSuccess { nowFollowing ->

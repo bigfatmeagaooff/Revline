@@ -2,8 +2,10 @@ package com.revline.tracker.data.remote
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Base64
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import org.json.JSONObject
 
 /**
  * Securely persists the JWT access/refresh tokens and the logged-in user, using
@@ -25,7 +27,26 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         set(value) = prefs.edit().putString(KEY_USERNAME, value).apply()
 
     val email: String? get() = prefs.getString(KEY_EMAIL, null)
-    val userId: String? get() = prefs.getString(KEY_USER_ID, null)
+
+    /**
+     * The logged-in user's server id. Stored at login since Phase 4; sessions created
+     * before that never saved it, so fall back to decoding the JWT's `sub` claim (and
+     * backfill the pref so the decode only ever happens once).
+     */
+    val userId: String?
+        get() {
+            prefs.getString(KEY_USER_ID, null)?.let { return it }
+            val sub = accessToken?.let { jwtSub(it) } ?: return null
+            prefs.edit().putString(KEY_USER_ID, sub).apply()
+            return sub
+        }
+
+    /** Extracts the `sub` claim from a JWT without verifying it (display-only use). */
+    private fun jwtSub(jwt: String): String? = runCatching {
+        val payload = jwt.split(".").getOrNull(1) ?: return null
+        val json = String(Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP))
+        JSONObject(json).optString("sub").ifBlank { null }
+    }.getOrNull()
 
     /** Persisted at login so the admin entry point survives restarts without an API call. */
     val isAdmin: Boolean get() = prefs.getBoolean(KEY_IS_ADMIN, false)
@@ -55,6 +76,7 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
     }
 
     companion object {
+        private const val PREFS_FILE = "revline_secure_prefs"
         private const val KEY_ACCESS = "access_token"
         private const val KEY_REFRESH = "refresh_token"
         private const val KEY_USER_ID = "user_id"
@@ -72,17 +94,28 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         }
 
         private fun create(context: Context): TokenStore {
+            return try {
+                TokenStore(buildEncryptedPrefs(context))
+            } catch (e: Exception) {
+                // The encrypted prefs file can become undecryptable (device restore,
+                // keystore reset). Rather than crash at launch forever, wipe the stale
+                // file and start fresh — the user just signs in again.
+                context.deleteSharedPreferences(PREFS_FILE)
+                TokenStore(buildEncryptedPrefs(context))
+            }
+        }
+
+        private fun buildEncryptedPrefs(context: Context): SharedPreferences {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
-            val prefs = EncryptedSharedPreferences.create(
+            return EncryptedSharedPreferences.create(
                 context,
-                "revline_secure_prefs",
+                PREFS_FILE,
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
-            return TokenStore(prefs)
         }
     }
 }

@@ -13,6 +13,7 @@ import com.revline.tracker.databinding.ActivityLeaderboardBinding
 import com.revline.tracker.ui.LeaderboardAdapter
 import kotlinx.coroutines.launch
 import java.util.Locale
+import com.revline.tracker.util.EdgeToEdge
 
 /** Public leaderboard with category tabs and pull-to-refresh. */
 class LeaderboardActivity : AppCompatActivity() {
@@ -27,6 +28,7 @@ class LeaderboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLeaderboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         binding.backButton.setOnClickListener { finish() }
@@ -62,8 +64,12 @@ class LeaderboardActivity : AppCompatActivity() {
     private fun load() {
         binding.swipeRefresh.isRefreshing = true
         binding.emptyState.visibility = View.GONE
+        val requested = category
         lifecycleScope.launch {
-            val result = sync.leaderboard(category)
+            val result = sync.leaderboard(requested)
+            // A slower response for a tab the user already left must not clobber the
+            // current tab's list (wrong data under the wrong unit).
+            if (requested != category) return@launch
             binding.swipeRefresh.isRefreshing = false
             result.onSuccess { entries ->
                 adapter.submitList(entries)

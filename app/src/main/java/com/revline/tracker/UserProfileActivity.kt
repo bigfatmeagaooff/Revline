@@ -18,6 +18,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.revline.tracker.util.EdgeToEdge
 
 /** Public profile: avatar, stats, follow toggle, and recent trips (read-only). */
 class UserProfileActivity : AppCompatActivity() {
@@ -32,6 +33,7 @@ class UserProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
         userId = intent.getStringExtra(EXTRA_USER_ID) ?: run { finish(); return }
 
@@ -45,7 +47,11 @@ class UserProfileActivity : AppCompatActivity() {
 
     private fun load() {
         lifecycleScope.launch {
-            sync.getUserProfile(userId).onSuccess { bind(it) }
+            sync.getUserProfile(userId).onSuccess { bind(it) }.onFailure {
+                android.widget.Toast.makeText(
+                    this@UserProfileActivity, R.string.profile_load_error, android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
             sync.getUserTrips(userId).onSuccess { bindTrips(it) }
         }
     }
@@ -84,6 +90,10 @@ class UserProfileActivity : AppCompatActivity() {
 
     private fun onFollowClicked() {
         if (inFlight) return
+        if (!sync.isLoggedIn) {
+            android.widget.Toast.makeText(this, R.string.sign_in_to_follow, android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         if (following) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.unfollow_confirm)
@@ -145,6 +155,10 @@ class UserProfileActivity : AppCompatActivity() {
 
         likeRow.setOnClickListener {
             if (busy) return@setOnClickListener
+            if (!sync.isLoggedIn) {
+                android.widget.Toast.makeText(this, R.string.sign_in_to_like, android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             busy = true
             // Optimistic update; revert on failure.
             val wasLiked = liked

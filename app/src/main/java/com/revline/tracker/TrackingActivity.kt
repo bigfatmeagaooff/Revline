@@ -10,6 +10,7 @@ import com.revline.tracker.databinding.ActivityTrackingBinding
 import com.revline.tracker.service.TrackingService
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /**
  * Dead-simple in-progress screen: elapsed timer, live G readout, and a big Stop button.
@@ -32,6 +33,7 @@ class TrackingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTrackingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
 
         binding.stopDriveButton.setOnClickListener { confirmStop() }
 

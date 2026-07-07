@@ -11,6 +11,7 @@ import com.revline.tracker.data.remote.UserSummary
 import com.revline.tracker.databinding.ActivityUserListBinding
 import com.revline.tracker.ui.UserAdapter
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /** Followers / following list for a user. */
 class UserListActivity : AppCompatActivity() {
@@ -24,6 +25,7 @@ class UserListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityUserListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         val userId = intent.getStringExtra(EXTRA_USER_ID) ?: run { finish(); return }
@@ -52,6 +54,10 @@ class UserListActivity : AppCompatActivity() {
     }
 
     private fun toggleFollow(user: UserSummary) {
+        if (!sync.isLoggedIn) {
+            android.widget.Toast.makeText(this, R.string.sign_in_to_follow, android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         lifecycleScope.launch {
             val result = if (user.isFollowing) sync.unfollowUser(user.id) else sync.followUser(user.id)
             result.onSuccess { nowFollowing ->

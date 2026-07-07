@@ -13,6 +13,7 @@ import com.revline.tracker.data.remote.Comment
 import com.revline.tracker.databinding.ActivityCommentsBinding
 import com.revline.tracker.ui.CommentAdapter
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /** Comments on a single server trip. Reusable for own trips and others'. */
 class CommentsActivity : AppCompatActivity() {
@@ -28,6 +29,7 @@ class CommentsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCommentsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
         tripId = intent.getStringExtra(EXTRA_TRIP_ID) ?: run { finish(); return }
 
@@ -51,7 +53,10 @@ class CommentsActivity : AppCompatActivity() {
 
     private fun load() {
         lifecycleScope.launch {
-            sync.getComments(tripId).onSuccess { submit(it) }
+            sync.getComments(tripId).onSuccess { submit(it) }.onFailure {
+                binding.emptyView.setText(R.string.comments_load_error)
+                binding.emptyView.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -85,7 +90,7 @@ class CommentsActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.comment_delete_confirm)
             .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(R.string.admin_reject) { _, _ -> doDelete(c) }
+            .setPositiveButton(R.string.comment_delete) { _, _ -> doDelete(c) }
             .show()
     }
 

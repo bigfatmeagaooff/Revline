@@ -10,6 +10,7 @@ import com.revline.tracker.data.AuthOutcome
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivityRegisterBinding
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /** Email/password/username registration. Finishes back to the caller on success. */
 class RegisterActivity : AppCompatActivity() {
@@ -21,6 +22,7 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         binding.registerButton.setOnClickListener { submit() }

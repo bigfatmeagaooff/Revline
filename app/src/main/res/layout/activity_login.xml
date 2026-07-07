@@ -89,6 +89,18 @@
             android:text="@string/go_to_register"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/skipLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="@string/skip_for_now"
+            android:textColor="@color/text_muted"
+            android:textSize="13sp" />
     </LinearLayout>
 
 </ScrollView>

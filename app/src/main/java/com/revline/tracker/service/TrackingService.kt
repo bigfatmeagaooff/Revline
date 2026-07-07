@@ -173,6 +173,9 @@ class TrackingService : LifecycleService() {
         when (intent?.action) {
             ACTION_START -> startTracking()
             ACTION_STOP -> stopTracking()
+            // Sticky restart after process death: tracking state is gone, so don't
+            // linger as an idle non-foreground service.
+            else -> if (intent == null && activeTripId == 0L) stopSelf()
         }
         return START_STICKY
     }

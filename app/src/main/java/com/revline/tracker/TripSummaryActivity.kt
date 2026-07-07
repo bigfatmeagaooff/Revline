@@ -30,6 +30,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
+import com.revline.tracker.util.EdgeToEdge
 
 /**
  * The "wow" screen: hero top-speed in red, a 2×3 stat grid, a speed-colored route map,
@@ -48,6 +49,7 @@ class TripSummaryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTripSummaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
 
         repository = TripRepository.getInstance(this)
         sync = SyncRepository.getInstance(this)
@@ -229,6 +231,7 @@ class TripSummaryActivity : AppCompatActivity() {
                 is UploadResult.Success -> {
                     showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
                     binding.reuploadButton.visibility = View.GONE
+                    repository.getTrip(trip.id)?.let { bindComments(it) }
                 }
                 else -> {
                     showStrip(getString(R.string.upload_failed_strip), R.color.warning, retry = true) { triggerReupload(trip) }
@@ -246,8 +249,11 @@ class TripSummaryActivity : AppCompatActivity() {
                 showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
             else -> lifecycleScope.launch {
                 when (val r = sync.uploadTrip(trip.id)) {
-                    is UploadResult.Success ->
+                    is UploadResult.Success -> {
                         showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                        // The upload stamped a serverTripId — re-read so Comments appears now.
+                        repository.getTrip(trip.id)?.let { bindComments(it) }
+                    }
                     is UploadResult.AlreadyUploaded ->
                         showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
                     is UploadResult.Failed ->

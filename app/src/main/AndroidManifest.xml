@@ -22,9 +22,11 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
+    <!-- Backup is off: EncryptedSharedPreferences restored onto a different device
+         can't be decrypted and would crash the app at launch. -->
     <application
         android:name=".RevlineApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

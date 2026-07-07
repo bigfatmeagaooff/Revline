@@ -13,6 +13,7 @@ import com.revline.tracker.ui.admin.UsersFragment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.revline.tracker.util.EdgeToEdge
 
 /**
  * Admin-only tabbed dashboard (Overview / Users / Trips / Flagged), replacing the
@@ -40,6 +41,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
 
         binding.pager.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount() = 4

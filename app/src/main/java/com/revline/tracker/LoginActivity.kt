@@ -10,6 +10,7 @@ import com.revline.tracker.data.AuthOutcome
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivityLoginBinding
 import kotlinx.coroutines.launch
+import com.revline.tracker.util.EdgeToEdge
 
 /** Email/password login. Finishes back to the caller on success. */
 class LoginActivity : AppCompatActivity() {
@@ -21,6 +22,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
         binding.loginButton.setOnClickListener { submit() }
@@ -28,6 +30,9 @@ class LoginActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
             finish()
         }
+        // The app is fully usable without an account (local tracking) — never dead-end
+        // someone at the sign-in screen.
+        binding.skipLogin.setOnClickListener { goToMain() }
     }
 
     private fun submit() {
