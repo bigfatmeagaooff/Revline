@@ -7,6 +7,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.revline.tracker.data.GForcePoint
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.TrackPoint
@@ -60,29 +62,43 @@ class TripSummaryActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val trip = repository.getTrip(tripId) ?: run { finish(); return@launch }
-            val trackPoints = repository.getTrackPoints(tripId)
-            val gForcePoints = repository.getGForcePoints(tripId)
-            val segments = SpeedCalculator.cleanSegments(trackPoints)
-            val hasRoute = segments.size >= 2
-            val movingG = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
 
-            val durationMillis = trip.actualDurationMinutes?.let { (it * 60_000f).toLong() }
-                ?: ((trip.endTime ?: trip.startTime) - trip.startTime)
-            val stats = TripStatsCalculator.compute(trackPoints, durationMillis, trip.distanceKm ?: 0f)
-            val gSummary = GForceCalculator.summarize(movingG)
+            // All the heavy lifting (segment cleaning, speed/G matching, stats) runs off
+            // the main thread. A long drive has tens of thousands of points, and doing
+            // this on the UI thread froze it long enough for Android to kill the app.
+            val data = withContext(Dispatchers.Default) {
+                val trackPoints = repository.getTrackPoints(tripId)
+                val gForcePoints = repository.getGForcePoints(tripId)
+                val segments = SpeedCalculator.cleanSegments(trackPoints)
+                val movingG = SpeedCalculator.movingGForcePoints(trackPoints, gForcePoints)
+                val durationMillis = trip.actualDurationMinutes?.let { (it * 60_000f).toLong() }
+                    ?: ((trip.endTime ?: trip.startTime) - trip.startTime)
+                val stats = TripStatsCalculator.compute(trackPoints, durationMillis, trip.distanceKm ?: 0f)
+                val gSummary = GForceCalculator.summarize(movingG)
+                Computed(segments, movingG, stats, gSummary, durationMillis)
+            }
 
             binding.restoredNote.visibility = if (trip.restoredFromServer) View.VISIBLE else View.GONE
 
             bindHero(trip)
-            bindGrid(trip, stats, durationMillis, movingG, gSummary)
+            bindGrid(trip, data.stats, data.durationMillis, data.movingG, data.gSummary)
             bindPrediction(trip)
-            renderRoute(segments, hasRoute)
-            bindGForce(movingG)
+            renderRoute(data.segments, data.segments.size >= 2)
+            bindGForce(data.movingG)
             bindComments(trip)
             bindActions(trip)
             maybeUpload(trip)
         }
     }
+
+    /** Everything derived from a trip's raw points, computed once on a background thread. */
+    private data class Computed(
+        val segments: List<SpeedCalculator.Segment>,
+        val movingG: List<GForcePoint>,
+        val stats: TripStatsCalculator.Stats,
+        val gSummary: GForceCalculator.Summary,
+        val durationMillis: Long
+    )
 
     /** Show a Comments entry only once the trip has a server id (i.e. it's been uploaded). */
     private fun bindComments(trip: Trip) {
@@ -296,18 +312,39 @@ class TripSummaryActivity : AppCompatActivity() {
         val lo = percentile(sortedSpeeds, 5.0)
         val hi = percentile(sortedSpeeds, 95.0)
 
+        // Colour each segment into one of a few buckets, then merge consecutive
+        // same-bucket segments into a single polyline. A one-overlay-per-segment map
+        // meant thousands of Polyline objects on a long drive — slow to draw and a
+        // memory risk. This keeps the speed colouring but collapses to a handful of
+        // overlays, with no gaps in the line.
         val geoPoints = ArrayList<GeoPoint>(segments.size + 1)
-        segments.forEachIndexed { index, seg ->
+        for ((index, seg) in segments.withIndex()) {
             if (index == 0) geoPoints.add(GeoPoint(seg.startLat, seg.startLon))
             geoPoints.add(GeoPoint(seg.endLat, seg.endLon))
+        }
+
+        fun bucketOf(seg: SpeedCalculator.Segment): Int {
             val t = if (hi > lo) ((seg.speedKmh - lo) / (hi - lo)).coerceIn(0f, 1f) else 0.5f
+            return (t * SPEED_BUCKETS).toInt().coerceIn(0, SPEED_BUCKETS - 1)
+        }
+
+        var runStart = 0
+        while (runStart < segments.size) {
+            val bucket = bucketOf(segments[runStart])
+            var runEnd = runStart
+            while (runEnd + 1 < segments.size && bucketOf(segments[runEnd + 1]) == bucket) runEnd++
+            val pts = ArrayList<GeoPoint>(runEnd - runStart + 2)
+            pts.add(GeoPoint(segments[runStart].startLat, segments[runStart].startLon))
+            for (i in runStart..runEnd) pts.add(GeoPoint(segments[i].endLat, segments[i].endLon))
             val line = Polyline(binding.mapView).apply {
-                outlinePaint.color = speedColor(t)
+                outlinePaint.color = speedColor((bucket + 0.5f) / SPEED_BUCKETS)
                 outlinePaint.strokeWidth = 10f
-                setPoints(listOf(GeoPoint(seg.startLat, seg.startLon), GeoPoint(seg.endLat, seg.endLon)))
+                setPoints(pts)
             }
             binding.mapView.overlays.add(line)
+            runStart = runEnd + 1
         }
+
         val bbox = BoundingBox.fromGeoPoints(geoPoints).increaseByScale(1.3f)
         binding.mapView.post { binding.mapView.zoomToBoundingBox(bbox, false, 48) }
         binding.mapView.invalidate()
@@ -333,6 +370,7 @@ class TripSummaryActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_TRIP_ID = "extra_trip_id"
+        private const val SPEED_BUCKETS = 16
         private val HERO_DATE = SimpleDateFormat("EEE d MMM · h:mm a", Locale.getDefault())
     }
 }

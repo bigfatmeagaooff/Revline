@@ -176,15 +176,20 @@ object SpeedCalculator {
         return out
     }
 
-    /** Interpolated GPS speed (km/h) at [timestamp], or null if no fix within the window. */
-    private fun speedKmhAt(samples: List<SpeedSample>, timestamp: Long): Float? {
+    /**
+     * Interpolated GPS speed (km/h) at [timestamp], or null if no fix within the window.
+     * [times] is the samples' timestamps as a sorted array, so the neighbours are found
+     * by binary search — O(log n) per lookup instead of a linear scan. This matters:
+     * a long drive can have tens of thousands of G readings, and matching each one
+     * against the speed track with a scan is O(G×T) and freezes/crashes the summary.
+     */
+    private fun speedKmhAt(samples: List<SpeedSample>, times: LongArray, timestamp: Long): Float? {
         if (samples.isEmpty()) return null
-        var before: SpeedSample? = null
-        var after: SpeedSample? = null
-        for (s in samples) {
-            if (s.timestamp <= timestamp) before = s
-            if (s.timestamp >= timestamp) { after = s; break }
-        }
+        val hit = java.util.Arrays.binarySearch(times, timestamp)
+        if (hit >= 0) return samples[hit].speedKmh
+        val insertion = -hit - 1
+        val before = samples.getOrNull(insertion - 1)
+        val after = samples.getOrNull(insertion)
         return when {
             before != null && after != null -> {
                 if (before.timestamp == after.timestamp) {
@@ -218,8 +223,9 @@ object SpeedCalculator {
         if (gForcePoints.isEmpty()) return emptyList()
         val samples = speedSamples(trackPoints)
         if (samples.isEmpty()) return emptyList()
+        val times = LongArray(samples.size) { samples[it].timestamp }
         return gForcePoints.filter { gp ->
-            val speed = speedKmhAt(samples, gp.timestamp)
+            val speed = speedKmhAt(samples, times, gp.timestamp)
             speed != null && speed >= MOVING_THRESHOLD_KMH
         }
     }

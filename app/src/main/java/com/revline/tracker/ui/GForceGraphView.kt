@@ -24,6 +24,11 @@ class GForceGraphView @JvmOverloads constructor(
 
     private var points: List<GForcePoint> = emptyList()
 
+    private companion object {
+        /** Cap on plotted points — plenty for a smooth trace on a short graph. */
+        const val MAX_POINTS = 2000
+    }
+
     private val forwardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#D32F2F") // revline red
         style = Paint.Style.STROKE
@@ -41,7 +46,21 @@ class GForceGraphView @JvmOverloads constructor(
     }
 
     fun setData(data: List<GForcePoint>) {
-        points = data
+        // A long drive can hold tens of thousands of G points; drawing a lineTo for
+        // every one on each frame is needless (the view is ~160dp tall). Evenly
+        // downsample to a cap that still traces the same shape.
+        points = if (data.size > MAX_POINTS) {
+            val step = data.size.toFloat() / MAX_POINTS
+            ArrayList<GForcePoint>(MAX_POINTS).apply {
+                var i = 0f
+                while (i < data.size) {
+                    add(data[i.toInt()])
+                    i += step
+                }
+            }
+        } else {
+            data
+        }
         invalidate()
     }
 
