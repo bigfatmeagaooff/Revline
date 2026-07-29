@@ -74,6 +74,8 @@
     <string name="label_peak_g">Peak G</string>
     <string name="hardest_braking_simple">Hardest braking: %1$.1f G</string>
     <string name="share">Share</string>
+    <string name="share_card">Share drive card</string>
+    <string name="share_failed">Couldn\'t create the share image</string>
     <string name="no_route_data">No route data</string>
     <string name="share_text">%1$s — top speed %2$.0f km/h over %3$.1f km (Revline)</string>
     <string name="label_max_lateral">Max lateral</string>

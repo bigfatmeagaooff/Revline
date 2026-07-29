@@ -4,8 +4,10 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +21,7 @@ import com.revline.tracker.databinding.ActivityTripSummaryBinding
 import com.revline.tracker.databinding.CellStatBinding
 import com.revline.tracker.util.GForceCalculator
 import com.revline.tracker.util.SpeedCalculator
+import com.revline.tracker.util.TripCardGenerator
 import com.revline.tracker.util.TripStatsCalculator
 import kotlinx.coroutines.launch
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -44,6 +47,9 @@ class TripSummaryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTripSummaryBinding
     private lateinit var repository: TripRepository
     private lateinit var sync: SyncRepository
+
+    /** Derived trip data, kept so the share card can reuse it without recomputing. */
+    private var computed: Computed? = null
 
     private val dash get() = getString(R.string.value_dash)
 
@@ -77,6 +83,7 @@ class TripSummaryActivity : AppCompatActivity() {
                 val gSummary = GForceCalculator.summarize(movingG)
                 Computed(segments, movingG, stats, gSummary, durationMillis)
             }
+            computed = data
 
             binding.restoredNote.visibility = if (trip.restoredFromServer) View.VISIBLE else View.GONE
 
@@ -266,19 +273,46 @@ class TripSummaryActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Generates the shareable drive card and hands it to the system share sheet.
+     * Rendered on demand (most drives never get shared) and off the main thread.
+     */
     private fun share(trip: Trip) {
-        val text = getString(
-            R.string.share_text,
-            HERO_DATE.format(Date(trip.startTime)),
-            trip.topSpeedKmh ?: 0f,
-            trip.distanceKm ?: 0f
-        )
-        startActivity(
-            Intent.createChooser(
-                Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text),
-                getString(R.string.share)
+        val data = computed ?: return
+        binding.shareButton.isEnabled = false
+        lifecycleScope.launch {
+            val file = withContext(Dispatchers.Default) {
+                val bitmap = TripCardGenerator.render(
+                    this@TripSummaryActivity, trip, data.segments, data.stats.zeroToHundredSec
+                )
+                TripCardGenerator.writeToCache(this@TripSummaryActivity, bitmap)
+                    .also { bitmap.recycle() }
+            }
+            binding.shareButton.isEnabled = true
+
+            val uri = runCatching {
+                FileProvider.getUriForFile(
+                    this@TripSummaryActivity, "$packageName.fileprovider", file
+                )
+            }.getOrNull()
+            if (uri == null) {
+                Toast.makeText(this@TripSummaryActivity, R.string.share_failed, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            val text = getString(
+                R.string.share_text,
+                HERO_DATE.format(Date(trip.startTime)),
+                trip.topSpeedKmh ?: 0f,
+                trip.distanceKm ?: 0f
             )
-        )
+            val send = Intent(Intent.ACTION_SEND)
+                .setType("image/png")
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .putExtra(Intent.EXTRA_TEXT, text)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(Intent.createChooser(send, getString(R.string.share)))
+        }
     }
 
     private fun triggerReupload(trip: Trip) {
