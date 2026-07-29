@@ -42,6 +42,13 @@ data class TrackPoint(
      */
     val accuracyMeters: Float? = null,
 
+    /**
+     * GPS altitude in meters, if the provider reported one. Frequently absent or noisy
+     * on phones without a barometer, so elevation stats are only surfaced when a trip
+     * has enough usable readings — see [com.revline.tracker.util.TripStatsCalculator].
+     */
+    val altitude: Double? = null,
+
     val timestamp: Long
 ) {
     fun toJson(): JSONObject {
@@ -52,6 +59,7 @@ data class TrackPoint(
         json.put("lon", lon)
         json.put("speedMps", speedMps ?: JSONObject.NULL)
         json.put("accuracyMeters", accuracyMeters ?: JSONObject.NULL)
+        json.put("altitude", altitude ?: JSONObject.NULL)
         json.put("timestamp", timestamp)
         return json
     }

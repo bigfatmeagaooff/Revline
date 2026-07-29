@@ -287,6 +287,76 @@
                 tools:text="Hardest braking: 0.8 G" />
         </LinearLayout>
 
+        <!-- Section 4a: drive detail (stops, elevation, cornering) -->
+        <LinearLayout
+            android:id="@+id/detailSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/Text.Section"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_detail_section"
+                android:textColor="@color/text_secondary" />
+
+            <LinearLayout
+                android:id="@+id/rowStops"
+                style="@style/DetailRow"
+                android:visibility="gone">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_stops" />
+
+                <TextView
+                    android:id="@+id/valueStops"
+                    style="@style/DetailValue"
+                    tools:text="7" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowCorneringPeak"
+                style="@style/DetailRow"
+                android:visibility="gone">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_cornering_peak" />
+
+                <TextView
+                    android:id="@+id/valueCorneringPeak"
+                    style="@style/DetailValue"
+                    tools:text="0.62 G" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowCorneringAvg"
+                style="@style/DetailRow"
+                android:visibility="gone">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_cornering_avg" />
+
+                <TextView
+                    android:id="@+id/valueCorneringAvg"
+                    style="@style/DetailValue"
+                    tools:text="0.28 G" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowElevation"
+                style="@style/DetailRow"
+                android:visibility="gone">
+
+                <TextView style="@style/DetailLabel" android:text="@string/label_elevation_gain" />
+
+                <TextView
+                    android:id="@+id/valueElevation"
+                    style="@style/DetailValue"
+                    tools:text="↑ 142 m · ↓ 138 m" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- Section 4b: comments (only for uploaded trips) -->
         <LinearLayout
             android:id="@+id/commentsSection"

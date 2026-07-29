@@ -84,6 +84,12 @@
 
     <!-- Enhanced drive-detail stats (Feature 3) -->
     <string name="label_detail_section">Drive Detail</string>
+    <string name="label_stops">Stops</string>
+    <string name="label_cornering_peak">Cornering (peak)</string>
+    <string name="label_cornering_avg">Cornering (avg)</string>
+    <string name="label_elevation_gain">Elevation</string>
+    <string name="detail_g_value">%1$.2f G</string>
+    <string name="detail_elevation_value">↑ %1$.0f m · ↓ %2$.0f m</string>
     <string name="label_idle">Idle / stopped</string>
     <string name="label_moving_avg">Moving avg</string>
     <string name="label_zero_hundred">0–100 km/h</string>

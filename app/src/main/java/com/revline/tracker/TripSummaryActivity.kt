@@ -85,6 +85,7 @@ class TripSummaryActivity : AppCompatActivity() {
             bindPrediction(trip)
             renderRoute(data.segments, data.segments.size >= 2)
             bindGForce(data.movingG)
+            bindDetail(data.stats, data.gSummary, data.movingG)
             bindComments(trip)
             bindActions(trip)
             maybeUpload(trip)
@@ -213,6 +214,46 @@ class TripSummaryActivity : AppCompatActivity() {
         } else {
             binding.hardestBrakingValue.visibility = View.GONE
         }
+    }
+
+    /**
+     * Drive Detail: stops, cornering G (peak + average) and elevation. Each row is
+     * shown only when that trip actually has the data — no zeroes or garbage numbers.
+     */
+    private fun bindDetail(
+        stats: TripStatsCalculator.Stats,
+        g: GForceCalculator.Summary,
+        movingG: List<GForcePoint>
+    ) {
+        var anyShown = false
+
+        if (stats.stopCount > 0) {
+            binding.rowStops.visibility = View.VISIBLE
+            binding.valueStops.text = stats.stopCount.toString()
+            anyShown = true
+        }
+
+        if (movingG.isNotEmpty() && g.maxLateralG > 0f) {
+            binding.rowCorneringPeak.visibility = View.VISIBLE
+            binding.valueCorneringPeak.text = getString(R.string.detail_g_value, g.maxLateralG)
+            anyShown = true
+        }
+
+        g.avgCorneringG?.let { avg ->
+            binding.rowCorneringAvg.visibility = View.VISIBLE
+            binding.valueCorneringAvg.text = getString(R.string.detail_g_value, avg)
+            anyShown = true
+        }
+
+        val gain = stats.elevationGainM
+        val loss = stats.elevationLossM
+        if (gain != null && loss != null && (gain >= 1f || loss >= 1f)) {
+            binding.rowElevation.visibility = View.VISIBLE
+            binding.valueElevation.text = getString(R.string.detail_elevation_value, gain, loss)
+            anyShown = true
+        }
+
+        binding.detailSection.visibility = if (anyShown) View.VISIBLE else View.GONE
     }
 
     private fun bindActions(trip: Trip) {

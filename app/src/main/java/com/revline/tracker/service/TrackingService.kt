@@ -93,6 +93,7 @@ class TrackingService : LifecycleService() {
                     lon = location.longitude,
                     speedMps = if (location.hasSpeed()) location.speed else null,
                     accuracyMeters = if (location.hasAccuracy()) location.accuracy else null,
+                    altitude = if (location.hasAltitude()) location.altitude else null,
                     timestamp = System.currentTimeMillis()
                 )
                 // Persist immediately; survives the process being killed mid-trip.
