@@ -14,6 +14,11 @@
     <!-- Foreground-service notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Optional: only requested if the user turns on automatic trip detection.
+         Lets Play Services tell us when a drive starts, using low-power sensors
+         instead of us polling GPS in the background. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
     <!-- Route map tiles (OSMDroid / OpenStreetMap). No accelerometer permission needed. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -92,6 +97,15 @@
             android:name=".CommentsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Auto-detect: receives IN_VEHICLE transitions from Play Services. -->
+        <receiver
+            android:name=".service.ActivityTransitionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.revline.tracker.action.ACTIVITY_TRANSITION" />
+            </intent-filter>
+        </receiver>
 
         <!-- Serves generated share cards to whichever app the user shares into. -->
         <provider

@@ -1,6 +1,8 @@
 package com.revline.tracker
 
 import android.app.Application
+import com.revline.tracker.service.AutoDetectManager
+import com.revline.tracker.util.AppSettings
 import org.osmdroid.config.Configuration
 import java.io.File
 
@@ -26,5 +28,11 @@ class RevlineApp : Application() {
         val tileCache = File(basePath, "tiles").apply { mkdirs() }
         config.osmdroidBasePath = basePath
         config.osmdroidTileCache = tileCache
+
+        // Activity-transition subscriptions don't survive a reboot or a force-stop, so
+        // re-register whenever the app starts and auto-detect is still switched on.
+        if (AppSettings.isAutoDetectEnabled(this) && AutoDetectManager.hasPermissions(this)) {
+            AutoDetectManager.start(this)
+        }
     }
 }

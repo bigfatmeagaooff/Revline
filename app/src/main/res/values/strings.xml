@@ -130,6 +130,14 @@
     <string name="error_fill_all_fields">Please fill in all fields</string>
     <string name="error_password_length">Password must be at least 8 characters</string>
 
+    <!-- Tracking settings -->
+    <string name="tracking_section">Tracking</string>
+    <string name="auto_detect_title">Automatic trip detection</string>
+    <string name="auto_detect_explain">Automatically start tracking when you begin driving. Uses more battery in the background.</string>
+    <string name="auto_detect_needs_permission">Needs "Allow all the time" location and physical activity access. Turn those on in Settings, or keep starting drives manually.</string>
+    <string name="auto_detect_on">Auto-detect on — drives start on their own</string>
+    <string name="auto_detect_denied">Permission denied — drives stay manual</string>
+
     <!-- My Car -->
     <string name="account">Account</string>
     <!-- Social -->

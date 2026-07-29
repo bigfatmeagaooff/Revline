@@ -1,12 +1,17 @@
 package com.revline.tracker
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.revline.tracker.data.SyncRepository
+import com.revline.tracker.service.AutoDetectManager
+import com.revline.tracker.util.AppSettings
 import com.revline.tracker.databinding.ActivityProfileBinding
 import com.revline.tracker.databinding.CellStatBinding
 import com.revline.tracker.ui.AdminDashboardActivity
@@ -47,6 +52,8 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
+        setUpAutoDetect()
+
         // Stat cell labels (set once)
         binding.cellDrives.statLabel.text = getString(R.string.profile_drives)
         binding.cellTopSpeed.statLabel.text = getString(R.string.profile_top)
@@ -84,6 +91,77 @@ class ProfileActivity : AppCompatActivity() {
             binding.logoutButton.visibility = View.GONE
             binding.adminButton.visibility = View.GONE
         }
+    }
+
+    // --- Automatic trip detection ---
+
+    /**
+     * Auto-detect needs physical-activity and always-on location access. The toggle only
+     * sticks once those are granted; otherwise it snaps back off with an explanation and
+     * the app keeps working exactly as before (manual start/stop).
+     */
+    private fun setUpAutoDetect() {
+        binding.autoDetectSwitch.isChecked = AppSettings.isAutoDetectEnabled(this)
+        renderAutoDetectNote()
+        binding.autoDetectSwitch.setOnCheckedChangeListener { _, checked ->
+            if (!checked) {
+                AppSettings.setAutoDetectEnabled(this, false)
+                AutoDetectManager.stop(this)
+                renderAutoDetectNote()
+                return@setOnCheckedChangeListener
+            }
+            if (AutoDetectManager.hasPermissions(this)) {
+                enableAutoDetect()
+            } else {
+                requestAutoDetectPermissions()
+            }
+        }
+    }
+
+    private fun enableAutoDetect() {
+        if (!AutoDetectManager.start(this)) {
+            // Permissions looked fine but registration failed — don't claim it's on.
+            binding.autoDetectSwitch.isChecked = false
+            AppSettings.setAutoDetectEnabled(this, false)
+            renderAutoDetectNote()
+            return
+        }
+        AppSettings.setAutoDetectEnabled(this, true)
+        renderAutoDetectNote()
+        Toast.makeText(this, R.string.auto_detect_on, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun requestAutoDetectPermissions() {
+        val needed = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            needed += Manifest.permission.ACTIVITY_RECOGNITION
+            needed += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        }
+        if (needed.isEmpty()) enableAutoDetect() else autoDetectPermissions.launch(needed.toTypedArray())
+    }
+
+    private val autoDetectPermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (AutoDetectManager.hasPermissions(this)) {
+            enableAutoDetect()
+        } else {
+            binding.autoDetectSwitch.isChecked = false
+            AppSettings.setAutoDetectEnabled(this, false)
+            renderAutoDetectNote()
+            Toast.makeText(this, R.string.auto_detect_denied, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun renderAutoDetectNote() {
+        val on = AppSettings.isAutoDetectEnabled(this)
+        binding.autoDetectNote.setText(
+            if (on && !AutoDetectManager.hasPermissions(this)) {
+                R.string.auto_detect_needs_permission
+            } else {
+                R.string.auto_detect_explain
+            }
+        )
     }
 
     private fun loadFollowCounts() {

@@ -67,6 +67,15 @@ class TrackingService : LifecycleService() {
     private var tripStartTime: Long = 0L
     private var stopping = false
 
+    /**
+     * True when this drive was started by auto-detect rather than the user. Only these
+     * drives auto-stop — a manually started drive is never ended out from under you.
+     */
+    private var autoStarted = false
+
+    /** Last time the car was seen genuinely moving; drives the auto-stop timer. */
+    private var lastMovingMs = 0L
+
     // G-force calibration: average the first ~1s of (gravity-free) readings as a
     // zero-reference, removing sensor bias / mount offset. Assumes a fixed mount.
     private var calibrating = false
@@ -86,7 +95,12 @@ class TrackingService : LifecycleService() {
             val tripId = activeTripId
             if (tripId == 0L) return
             for (location in result.locations) {
-                if (location.hasSpeed()) _liveSpeedKmh.value = location.speed * 3.6f
+                if (location.hasSpeed()) {
+                    val kmh = location.speed * 3.6f
+                    _liveSpeedKmh.value = kmh
+                    if (kmh >= AUTO_STOP_SPEED_KMH) lastMovingMs = System.currentTimeMillis()
+                    maybeAutoStop()
+                }
                 val point = TrackPoint(
                     tripId = tripId,
                     lat = location.latitude,
@@ -172,7 +186,7 @@ class TrackingService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         when (intent?.action) {
-            ACTION_START -> startTracking()
+            ACTION_START -> startTracking(auto = intent.getBooleanExtra(EXTRA_AUTO_STARTED, false))
             ACTION_STOP -> stopTracking()
             // Sticky restart after process death: tracking state is gone, so don't
             // linger as an idle non-foreground service.
@@ -181,10 +195,12 @@ class TrackingService : LifecycleService() {
         return START_STICKY
     }
 
-    private fun startTracking() {
+    private fun startTracking(auto: Boolean = false) {
         if (activeTripId != 0L) return // already tracking
 
+        autoStarted = auto
         tripStartTime = System.currentTimeMillis()
+        lastMovingMs = tripStartTime
         startForegroundWithNotification(elapsedMinutes = 0)
 
         lifecycleScope.launch {
@@ -208,6 +224,18 @@ class TrackingService : LifecycleService() {
             tickNotification()
             tickHeartbeat()
         }
+    }
+
+    /**
+     * Ends an auto-started drive once the car has been at a near-standstill for
+     * [AUTO_STOP_AFTER_MS]. Three minutes is long enough to sit through a light or
+     * crawling traffic without the drive being cut short.
+     */
+    private fun maybeAutoStop() {
+        if (!autoStarted || stopping || activeTripId == 0L) return
+        if (System.currentTimeMillis() - lastMovingMs < AUTO_STOP_AFTER_MS) return
+        Log.i(TAG, "Auto-stopping: stationary for ${AUTO_STOP_AFTER_MS / 60_000} min")
+        stopTracking()
     }
 
     /** While tracking, the user is active — ping presence every 3 minutes. */
@@ -371,6 +399,7 @@ class TrackingService : LifecycleService() {
 
         const val ACTION_START = "com.revline.tracker.action.START"
         const val ACTION_STOP = "com.revline.tracker.action.STOP"
+        private const val EXTRA_AUTO_STARTED = "extra_auto_started"
 
         private const val CHANNEL_ID = "revline_tracking"
         private const val NOTIFICATION_ID = 1001
@@ -382,6 +411,12 @@ class TrackingService : LifecycleService() {
         private const val G_PERSIST_INTERVAL_MS = 100L // ~10 Hz writes
         private const val G_UI_INTERVAL_MS = 100L      // ~10 fps live readout
         private const val HEARTBEAT_INTERVAL_MS = 3 * 60 * 1000L // 3 minutes
+
+        /** At or above this the car counts as moving, for auto-stop purposes. */
+        private const val AUTO_STOP_SPEED_KMH = 5f
+
+        /** Stationary for this long ends an auto-started drive. */
+        private const val AUTO_STOP_AFTER_MS = 3 * 60 * 1000L // 3 minutes
 
         /**
          * Observable tracking state shared with the UI. Survives config changes and
@@ -404,6 +439,15 @@ class TrackingService : LifecycleService() {
         fun start(context: Context) {
             val intent = Intent(context, TrackingService::class.java).apply {
                 action = ACTION_START
+            }
+            context.startForegroundService(intent)
+        }
+
+        /** Started by auto-detect. These drives end themselves once the car is parked. */
+        fun startAuto(context: Context) {
+            val intent = Intent(context, TrackingService::class.java).apply {
+                action = ACTION_START
+                putExtra(EXTRA_AUTO_STARTED, true)
             }
             context.startForegroundService(intent)
         }
