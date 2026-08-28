@@ -1,6 +1,7 @@
 package com.revline.tracker.data
 
 import android.content.Context
+import com.revline.tracker.data.remote.AdminResetCodeResponse
 import com.revline.tracker.data.remote.AdminStats
 import com.revline.tracker.data.remote.AdminTrip
 import com.revline.tracker.data.remote.AdminUser
@@ -9,6 +10,7 @@ import com.revline.tracker.data.remote.FlaggedTrip
 import com.revline.tracker.data.remote.LeaderboardEntry
 import com.revline.tracker.data.remote.LoginRequest
 import com.revline.tracker.data.remote.RegisterRequest
+import com.revline.tracker.data.remote.ResetPasswordRequest
 import com.revline.tracker.data.remote.RevlineApi
 import com.revline.tracker.data.remote.TokenStore
 import com.revline.tracker.data.remote.UploadTripRequest
@@ -99,6 +101,27 @@ class SyncRepository private constructor(
             AuthOutcome.Error(e.message ?: "Network error")
         }
     }
+
+    /**
+     * Redeem an admin-issued reset code and set a new password. On success the server
+     * invalidates every session for that account, so the user signs in fresh afterward.
+     */
+    suspend fun resetPassword(email: String, code: String, newPassword: String): AuthOutcome =
+        withContext(Dispatchers.IO) {
+            try {
+                val resp = api.resetPassword(
+                    ResetPasswordRequest(email.trim(), code.trim(), newPassword)
+                )
+                if (resp.isSuccessful) AuthOutcome.Success
+                else AuthOutcome.Error(errorMessage(resp))
+            } catch (e: Exception) {
+                AuthOutcome.Error(e.message ?: "Network error")
+            }
+        }
+
+    /** Admin action: issue a one-time password reset code for a user (shown once). */
+    suspend fun issueResetCode(userId: String): Result<AdminResetCodeResponse> =
+        adminCall { api.adminIssueResetCode(userId) }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
         try {

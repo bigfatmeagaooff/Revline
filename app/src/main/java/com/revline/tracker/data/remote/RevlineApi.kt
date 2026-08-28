@@ -20,6 +20,9 @@ interface RevlineApi {
     @POST("api/auth/logout")
     suspend fun logout(): Response<Unit>
 
+    @POST("api/auth/reset-password")
+    suspend fun resetPassword(@Body body: ResetPasswordRequest): Response<OkResponse>
+
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>
 
@@ -103,4 +106,7 @@ interface RevlineApi {
         @Path("id") tripId: String,
         @Body body: VerdictRequest
     ): Response<VerdictResponse>
+
+    @POST("api/admin/users/{id}/reset-code")
+    suspend fun adminIssueResetCode(@Path("id") userId: String): Response<AdminResetCodeResponse>
 }

@@ -12,8 +12,8 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 17
-        versionName = "3.6.0"
+        versionCode = 18
+        versionName = "3.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -24,6 +24,18 @@ android {
             ?: System.getenv("REVLINE_API_BASE_URL")
             ?: "http://10.0.2.2:3000/"
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+
+        // Sentry crash reporting. Like the server URL, the DSN is NOT hardcoded — pass
+        // -PrevlineSentryDsn=... at build time (or REVLINE_SENTRY_DSN in the env).
+        // Blank => the Sentry SDK auto-init sees an empty DSN and stays fully disabled.
+        // A Sentry DSN is a write-only ingest key that ships inside every APK anyway, so
+        // it's fine to keep the project default here. Override per-build with
+        // -PrevlineSentryDsn=... or REVLINE_SENTRY_DSN; pass an empty value to disable.
+        val sentryDsn = (project.findProperty("revlineSentryDsn") as String?)
+            ?: System.getenv("REVLINE_SENTRY_DSN")
+            ?: "https://618c73f3b64c0a354b1e607e9b9e75e7@o4511989209497600.ingest.de.sentry.io/4511989261533264"
+        manifestPlaceholders["sentryDsn"] = sentryDsn
+        manifestPlaceholders["sentryEnv"] = if (sentryDsn.isBlank()) "development" else "production"
     }
 
     buildTypes {
@@ -91,4 +103,7 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.fragment.ktx)
+
+    // Crash / error reporting (auto-captures uncaught exceptions + ANRs via manifest init)
+    implementation(libs.sentry.android)
 }

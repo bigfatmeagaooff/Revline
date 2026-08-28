@@ -12,7 +12,8 @@ import com.revline.tracker.databinding.ItemAdminUserBinding
 import com.revline.tracker.util.RelativeTime
 
 class AdminUserAdapter(
-    private val onClick: (AdminUser) -> Unit
+    private val onClick: (AdminUser) -> Unit,
+    private val onLongClick: (AdminUser) -> Unit = {}
 ) : ListAdapter<AdminUser, AdminUserAdapter.VH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -39,6 +40,10 @@ class AdminUserAdapter(
                 RelativeTime.lastSeen(user.lastSeen)
             )
             binding.root.setOnClickListener { onClick(user) }
+            binding.root.setOnLongClickListener {
+                onLongClick(user)
+                true
+            }
         }
     }
 

@@ -29,6 +29,21 @@ data class RefreshResponse(
     val accessToken: String
 )
 
+data class ResetPasswordRequest(
+    val email: String,
+    val code: String,
+    val newPassword: String
+)
+
+/** POST /api/admin/users/:id/reset-code — the code is shown to the admin exactly once. */
+data class AdminResetCodeResponse(
+    val code: String,
+    val email: String,
+    val username: String,
+    val expiresAt: String?,
+    val expiresInHours: Int = 24
+)
+
 data class RemoteUser(
     val id: String,
     val email: String,

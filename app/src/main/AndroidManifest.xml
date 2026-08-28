@@ -39,6 +39,13 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Revline">
 
+        <!-- Sentry crash reporting. DSN is injected at build time (-PrevlineSentryDsn=...);
+             an empty value disables the SDK entirely. -->
+        <meta-data android:name="io.sentry.dsn" android:value="${sentryDsn}" />
+        <meta-data android:name="io.sentry.environment" android:value="${sentryEnv}" />
+        <meta-data android:name="io.sentry.anr.enable" android:value="true" />
+        <meta-data android:name="io.sentry.traces.sample-rate" android:value="0.0" />
+
         <activity
             android:name=".SplashActivity"
             android:exported="true"

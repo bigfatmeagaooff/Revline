@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Crash & error reporting (Sentry).** `sentry-android` auto-initialises from the
+  manifest and captures uncaught exceptions + ANRs. The DSN is a build-time flag
+  (`-PrevlineSentryDsn=...` / `REVLINE_SENTRY_DSN`), never committed; a blank DSN
+  disables the SDK entirely. The release workflow takes a `sentryDsn` input.
+- **Admin-assisted password reset.** Long-press a user in the admin dashboard's Users
+  tab to issue a one-time reset code (`POST /api/admin/users/:id/reset-code`). The user
+  redeems it from the sign-in screen via **Forgot password?**
+  (`POST /api/auth/reset-password`), choosing their own new password; all their
+  sessions are invalidated on success. Self-service email delivery is still to come.
+
 ### Changed
 
 - **Full UI redesign — dark motorsport aesthetic (car-meet demo).** New design-token

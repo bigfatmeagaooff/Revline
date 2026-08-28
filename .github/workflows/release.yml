@@ -17,6 +17,10 @@ on:
         description: 'Server base URL to bake into the APK (e.g. http://1.2.3.4/). Leave blank for the default.'
         required: false
         default: ''
+      sentryDsn:
+        description: 'Sentry DSN to bake into the APK for crash reporting. Leave blank to disable Sentry.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -59,10 +63,14 @@ jobs:
       - name: Assemble APK
         env:
           API_BASE_URL: ${{ github.event.inputs.apiBaseUrl }}
+          SENTRY_DSN: ${{ github.event.inputs.sentryDsn }}
         run: |
           ARGS=""
           if [ -n "$API_BASE_URL" ]; then
-            ARGS="-PrevlineApiBaseUrl=$API_BASE_URL"
+            ARGS="$ARGS -PrevlineApiBaseUrl=$API_BASE_URL"
+          fi
+          if [ -n "$SENTRY_DSN" ]; then
+            ARGS="$ARGS -PrevlineSentryDsn=$SENTRY_DSN"
           fi
           ./gradlew assembleDebug --no-daemon --stacktrace $ARGS
 
