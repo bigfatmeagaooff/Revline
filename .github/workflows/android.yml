@@ -32,8 +32,17 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      # Compile check. The artifact is also built against the real server so a
+      # sideloaded CI build actually connects (blank -> the build.gradle.kts
+      # emulator placeholder, which fails on a real phone).
       - name: Assemble debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          API_BASE_URL_VAR: ${{ vars.REVLINE_API_BASE_URL }}
+          DEFAULT_API_BASE_URL: 'http://34.151.182.10/'
+        run: |
+          BASE_URL="${API_BASE_URL_VAR:-$DEFAULT_API_BASE_URL}"
+          echo "Building against API base URL: $BASE_URL"
+          ./gradlew assembleDebug --no-daemon --stacktrace -PrevlineApiBaseUrl=$BASE_URL
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

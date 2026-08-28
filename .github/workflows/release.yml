@@ -14,7 +14,7 @@ on:
         required: true
         default: 'v1.0.0'
       apiBaseUrl:
-        description: 'Server base URL to bake into the APK (e.g. http://1.2.3.4/). Leave blank for the default.'
+        description: 'Server base URL to bake into the APK. Leave blank to use the production server (repo variable REVLINE_API_BASE_URL, or the workflow default).'
         required: false
         default: ''
       sentryDsn:
@@ -58,17 +58,23 @@ jobs:
       # Builds the debug APK so the released artifact is installable without a
       # keystore. To publish a signed release APK instead, add the signing config
       # described in the README and supply the keystore via repository secrets.
-      # The server base URL is passed through as a build flag (never committed); blank
-      # falls back to the default in app/build.gradle.kts.
+      #
+      # Server URL resolution (first non-empty wins):
+      #   1. the workflow_dispatch `apiBaseUrl` input
+      #   2. repo variable REVLINE_API_BASE_URL  (Settings > Secrets and variables > Actions > Variables)
+      #   3. the DEFAULT_API_BASE_URL below
+      # This means a release made by pushing a tag (no inputs) still gets a real
+      # server URL instead of the emulator placeholder from app/build.gradle.kts.
       - name: Assemble APK
         env:
-          API_BASE_URL: ${{ github.event.inputs.apiBaseUrl }}
+          API_BASE_URL_INPUT: ${{ github.event.inputs.apiBaseUrl }}
+          API_BASE_URL_VAR: ${{ vars.REVLINE_API_BASE_URL }}
+          DEFAULT_API_BASE_URL: 'http://34.151.182.10/'
           SENTRY_DSN: ${{ github.event.inputs.sentryDsn }}
         run: |
-          ARGS=""
-          if [ -n "$API_BASE_URL" ]; then
-            ARGS="$ARGS -PrevlineApiBaseUrl=$API_BASE_URL"
-          fi
+          BASE_URL="${API_BASE_URL_INPUT:-${API_BASE_URL_VAR:-$DEFAULT_API_BASE_URL}}"
+          echo "Building against API base URL: $BASE_URL"
+          ARGS="-PrevlineApiBaseUrl=$BASE_URL"
           if [ -n "$SENTRY_DSN" ]; then
             ARGS="$ARGS -PrevlineSentryDsn=$SENTRY_DSN"
           fi
