@@ -5,6 +5,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -22,6 +23,9 @@ interface RevlineApi {
 
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body body: ResetPasswordRequest): Response<OkResponse>
+
+    @PUT("api/users/me/car")
+    suspend fun updateCar(@Body body: CarRequest): Response<CarResponse>
 
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>
@@ -109,4 +113,10 @@ interface RevlineApi {
 
     @POST("api/admin/users/{id}/reset-code")
     suspend fun adminIssueResetCode(@Path("id") userId: String): Response<AdminResetCodeResponse>
+
+    @GET("api/admin/leaderboard/unknown")
+    suspend fun adminUnknownCars(): Response<UnknownCarsResponse>
+
+    @POST("api/admin/leaderboard/purge-unknown")
+    suspend fun adminPurgeUnknownCars(): Response<PurgeUnknownResponse>
 }

@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Your car is now part of your account.** Registration asks for make + model
+  (year optional) and saves it to the server. Trip uploads use the account car,
+  taken server-side — so an "unknown car" can never reach the leaderboard.
+  Existing accounts add theirs in Profile → My Car (it also syncs to the server
+  now). Uploading a run with no car set prompts you to add one first.
+- **Admin: "Clean unknown cars off the leaderboard."** In the admin Overview tab —
+  finds every leaderboard run with no car and takes it off (marks it rejected;
+  an admin can restore individual runs). Backfill also pulls each user's car from
+  their most recent trip that had one.
+
 ### Fixed
 
 - **Updates install in place now — no more uninstall/reinstall.** The build had no

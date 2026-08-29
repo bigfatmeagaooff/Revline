@@ -51,6 +51,20 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
     /** Persisted at login so the admin entry point survives restarts without an API call. */
     val isAdmin: Boolean get() = prefs.getBoolean(KEY_IS_ADMIN, false)
 
+    /** The account's car — the source of truth for leaderboard uploads. */
+    val carMake: String? get() = prefs.getString(KEY_CAR_MAKE, null)?.ifBlank { null }
+    val carModel: String? get() = prefs.getString(KEY_CAR_MODEL, null)?.ifBlank { null }
+    val carYear: Int? get() = prefs.getInt(KEY_CAR_YEAR, -1).takeIf { it > 0 }
+    val hasCar: Boolean get() = !carMake.isNullOrBlank() && !carModel.isNullOrBlank()
+
+    fun saveCar(make: String?, model: String?, year: Int?) {
+        prefs.edit()
+            .putString(KEY_CAR_MAKE, make?.trim())
+            .putString(KEY_CAR_MODEL, model?.trim())
+            .putInt(KEY_CAR_YEAR, year ?: -1)
+            .apply()
+    }
+
     val isLoggedIn: Boolean get() = accessToken != null && refreshToken != null
 
     fun save(
@@ -59,7 +73,10 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         userId: String,
         username: String,
         email: String,
-        isAdmin: Boolean
+        isAdmin: Boolean,
+        carMake: String? = null,
+        carModel: String? = null,
+        carYear: Int? = null
     ) {
         prefs.edit()
             .putString(KEY_ACCESS, accessToken)
@@ -68,6 +85,9 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
             .putString(KEY_USERNAME, username)
             .putString(KEY_EMAIL, email)
             .putBoolean(KEY_IS_ADMIN, isAdmin)
+            .putString(KEY_CAR_MAKE, carMake?.trim())
+            .putString(KEY_CAR_MODEL, carModel?.trim())
+            .putInt(KEY_CAR_YEAR, carYear ?: -1)
             .apply()
     }
 
@@ -83,6 +103,9 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_USERNAME = "username"
         private const val KEY_EMAIL = "email"
         private const val KEY_IS_ADMIN = "is_admin"
+        private const val KEY_CAR_MAKE = "car_make"
+        private const val KEY_CAR_MODEL = "car_model"
+        private const val KEY_CAR_YEAR = "car_year"
 
         @Volatile
         private var INSTANCE: TokenStore? = null

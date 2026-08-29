@@ -346,6 +346,10 @@ class TripSummaryActivity : AppCompatActivity() {
                     }
                     is UploadResult.AlreadyUploaded ->
                         showStrip(getString(R.string.upload_done_strip), R.color.stage, retry = false)
+                    is UploadResult.NoCarProfile ->
+                        showStrip(getString(R.string.upload_needs_car), R.color.warning, retry = true) {
+                            startActivity(Intent(this@TripSummaryActivity, ProfileActivity::class.java))
+                        }
                     is UploadResult.Failed ->
                         showStrip(getString(R.string.upload_failed_strip), R.color.warning, retry = true) { triggerReupload(trip) }
                     else -> binding.uploadStatus.visibility = View.GONE

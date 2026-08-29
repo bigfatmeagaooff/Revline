@@ -204,11 +204,25 @@
     <string name="profile_top">Top km/h</string>
     <string name="profile_best">Best km</string>
     <string name="my_car">My Car</string>
-    <string name="my_car_hint">Sent with your uploads so it shows on the leaderboard.</string>
+    <string name="my_car_hint">Your car appears on the leaderboard next to your runs. It\'s required to post.</string>
     <string name="hint_make">Make</string>
     <string name="hint_model">Model</string>
     <string name="hint_year">Year</string>
+    <string name="hint_year_optional">Year (optional)</string>
     <string name="save_car">Save car</string>
+    <string name="register_car_section">Your car</string>
+    <string name="register_car_why">Shown on the leaderboard next to your runs. Keeps unknown cars off it.</string>
+    <string name="error_car_required">Required — the leaderboard needs your car</string>
+    <string name="upload_needs_car">Add your car in your profile to post this run to the leaderboard</string>
+    <string name="upload_needs_car_action">Add car</string>
+
+    <!-- Admin: leaderboard cleanup -->
+    <string name="admin_maintenance_section">Maintenance</string>
+    <string name="admin_clean_leaderboard">Clean unknown cars off the leaderboard</string>
+    <string name="admin_clean_none">No unknown-car runs on the leaderboard</string>
+    <string name="admin_clean_confirm">Take %1$d run(s) with no car off the leaderboard? They\'ll show as rejected and can be restored one by one.</string>
+    <string name="admin_clean_done">Removed %1$d run(s) from the leaderboard</string>
+    <string name="admin_clean_failed">Couldn\'t run the cleanup: %1$s</string>
     <string name="car_saved">Car saved</string>
 
     <!-- Upload status -->

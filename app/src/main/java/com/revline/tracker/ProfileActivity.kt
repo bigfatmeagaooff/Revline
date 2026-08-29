@@ -34,10 +34,12 @@ class ProfileActivity : AppCompatActivity() {
         EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
-        val car = CarProfile.load(this)
-        binding.makeInput.setText(car.make.orEmpty())
-        binding.modelInput.setText(car.model.orEmpty())
-        binding.yearInput.setText(car.year?.toString().orEmpty())
+        // The account car (when signed in) is the source of truth; fall back to the
+        // local profile for signed-out users.
+        val local = CarProfile.load(this)
+        binding.makeInput.setText((sync.carMake ?: local.make).orEmpty())
+        binding.modelInput.setText((sync.carModel ?: local.model).orEmpty())
+        binding.yearInput.setText(((sync.carYear ?: local.year)?.toString()).orEmpty())
 
         binding.saveCarButton.setOnClickListener { saveCar() }
         binding.loginButton.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
@@ -207,7 +209,30 @@ class ProfileActivity : AppCompatActivity() {
         val make = binding.makeInput.text?.toString()?.trim().orEmpty()
         val model = binding.modelInput.text?.toString()?.trim().orEmpty()
         val year = binding.yearInput.text?.toString()?.trim()?.toIntOrNull()
+
+        // Local save always (used by the share card offline). When signed in, the
+        // account car is the source of truth for the leaderboard — push it too.
         CarProfile.save(this, make.ifBlank { null }, model.ifBlank { null }, year)
-        Toast.makeText(this, R.string.car_saved, Toast.LENGTH_SHORT).show()
+
+        if (!sync.isLoggedIn) {
+            Toast.makeText(this, R.string.car_saved, Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (make.isEmpty()) { binding.makeLayout.error = getString(R.string.error_car_required); return }
+        if (model.isEmpty()) { binding.modelLayout.error = getString(R.string.error_car_required); return }
+        binding.makeLayout.error = null
+        binding.modelLayout.error = null
+
+        binding.saveCarButton.isEnabled = false
+        lifecycleScope.launch {
+            val r = sync.updateCar(make, model, year)
+            binding.saveCarButton.isEnabled = true
+            Toast.makeText(
+                this@ProfileActivity,
+                if (r.isSuccess) getString(R.string.car_saved)
+                else r.exceptionOrNull()?.message ?: getString(R.string.admin_load_error),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }

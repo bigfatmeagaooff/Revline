@@ -7,7 +7,22 @@ import com.google.gson.annotations.SerializedName
 data class RegisterRequest(
     val email: String,
     val password: String,
-    val username: String
+    val username: String,
+    val carMake: String,
+    val carModel: String,
+    val carYear: Int?
+)
+
+data class CarRequest(
+    val carMake: String,
+    val carModel: String,
+    val carYear: Int?
+)
+
+data class CarResponse(
+    val carMake: String?,
+    val carModel: String?,
+    val carYear: Int?
 )
 
 data class LoginRequest(
@@ -48,8 +63,17 @@ data class RemoteUser(
     val id: String,
     val email: String,
     val username: String,
-    val isAdmin: Boolean = false
+    val isAdmin: Boolean = false,
+    val carMake: String? = null,
+    val carModel: String? = null,
+    val carYear: Int? = null
 )
+
+/** POST /api/admin/leaderboard/purge-unknown */
+data class PurgeUnknownResponse(val rejected: Int = 0)
+
+/** GET /api/admin/leaderboard/unknown */
+data class UnknownCarsResponse(val count: Int = 0)
 
 // --- Trip upload ---
 

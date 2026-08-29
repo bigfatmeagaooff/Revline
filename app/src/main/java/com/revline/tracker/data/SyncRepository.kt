@@ -38,6 +38,8 @@ sealed class UploadResult {
     object NotLoggedIn : UploadResult()
     /** Trip has no real computed stats yet (e.g. never finalized) — don't upload junk. */
     object NoValidStats : UploadResult()
+    /** Signed in, but no car on the account — the leaderboard requires one. */
+    object NoCarProfile : UploadResult()
     data class Failed(val message: String) : UploadResult()
 }
 
@@ -70,14 +72,45 @@ class SyncRepository private constructor(
     val userEmail: String? get() = tokenStore.email
     val isAdmin: Boolean get() = tokenStore.isAdmin
 
-    suspend fun register(email: String, password: String, username: String): AuthOutcome =
-        withContext(Dispatchers.IO) {
-            runAuth { api.register(RegisterRequest(email, password, username)) }
-        }
+    val carMake: String? get() = tokenStore.carMake
+    val carModel: String? get() = tokenStore.carModel
+    val carYear: Int? get() = tokenStore.carYear
+    /** A signed-in account with a car set — the gate for leaderboard uploads. */
+    val hasCarProfile: Boolean get() = tokenStore.isLoggedIn && tokenStore.hasCar
+
+    suspend fun register(
+        email: String,
+        password: String,
+        username: String,
+        carMake: String,
+        carModel: String,
+        carYear: Int?
+    ): AuthOutcome = withContext(Dispatchers.IO) {
+        runAuth { api.register(RegisterRequest(email, password, username, carMake, carModel, carYear)) }
+    }
 
     suspend fun login(email: String, password: String): AuthOutcome =
         withContext(Dispatchers.IO) {
             runAuth { api.login(LoginRequest(email, password)) }
+        }
+
+    /** Set/update the account's car. Also mirrors it to the local car profile. */
+    suspend fun updateCar(make: String, model: String, year: Int?): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                val resp = api.updateCar(
+                    com.revline.tracker.data.remote.CarRequest(make.trim(), model.trim(), year)
+                )
+                if (resp.isSuccessful) {
+                    tokenStore.saveCar(make, model, year)
+                    CarProfile.save(appContext, make, model, year)
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception(errorMessage(resp)))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
 
     private suspend fun runAuth(call: suspend () -> Response<com.revline.tracker.data.remote.AuthResponse>): AuthOutcome {
@@ -91,8 +124,15 @@ class SyncRepository private constructor(
                     body.user.id,
                     body.user.username,
                     body.user.email,
-                    body.user.isAdmin
+                    body.user.isAdmin,
+                    body.user.carMake,
+                    body.user.carModel,
+                    body.user.carYear
                 )
+                // Keep the local car profile (used by the share card) in step.
+                if (!body.user.carMake.isNullOrBlank()) {
+                    CarProfile.save(appContext, body.user.carMake, body.user.carModel, body.user.carYear)
+                }
                 AuthOutcome.Success
             } else {
                 AuthOutcome.Error(errorMessage(resp))
@@ -145,6 +185,8 @@ class SyncRepository private constructor(
         // Fix 1: never upload a trip without real computed stats (the source of the null
         // server rows — e.g. drives whose service was killed before finalize ran).
         if (!hasValidStats(trip)) return@withContext UploadResult.NoValidStats
+        // The leaderboard requires a car on the account (the server enforces this too).
+        if (!tokenStore.hasCar) return@withContext UploadResult.NoCarProfile
 
         val trackPoints = tripRepository.getTrackPoints(tripId)
         val gForcePoints = tripRepository.getGForcePoints(tripId)
@@ -191,6 +233,8 @@ class SyncRepository private constructor(
                 UploadResult.Success(flagged = body.flagged, deduped = body.deduped)
             } else if (resp.code() == 401) {
                 UploadResult.NotLoggedIn
+            } else if (resp.code() == 422) {
+                UploadResult.NoCarProfile
             } else {
                 UploadResult.Failed(errorMessage(resp))
             }
@@ -385,6 +429,14 @@ class SyncRepository private constructor(
     suspend fun getAdminStats(): Result<AdminStats> = adminCall { api.adminStats() }
 
     suspend fun getAdminUsers(): Result<List<AdminUser>> = adminCall { api.adminUsers() }
+
+    /** How many leaderboard trips currently have no car. */
+    suspend fun unknownCarCount(): Result<Int> =
+        adminCall { api.adminUnknownCars() }.map { it.count }
+
+    /** Take every no-car trip off the leaderboard (marks them rejected). Returns the count. */
+    suspend fun purgeUnknownCars(): Result<Int> =
+        adminCall { api.adminPurgeUnknownCars() }.map { it.rejected }
 
     suspend fun getAdminTrips(
         flaggedOnly: Boolean = false,

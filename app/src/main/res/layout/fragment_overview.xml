@@ -69,6 +69,21 @@
 
                 <TextView android:id="@+id/valueActive" style="@style/DetailValue" tools:text="2" />
             </LinearLayout>
+
+            <TextView
+                style="@style/Text.Section"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/admin_maintenance_section" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cleanLeaderboardButton"
+                style="@style/Widget.Revline.Button.OutlineRed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/admin_clean_leaderboard" />
         </LinearLayout>
     </ScrollView>
 

@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.revline.tracker.R
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.remote.AdminStats
@@ -29,8 +31,46 @@ class OverviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         sync = SyncRepository.getInstance(requireContext())
         binding.swipeRefresh.setOnRefreshListener { load() }
+        binding.cleanLeaderboardButton.setOnClickListener { cleanLeaderboard() }
         load()
     }
+
+    /** Find leaderboard runs with no car, confirm, and take them off. */
+    private fun cleanLeaderboard() {
+        binding.cleanLeaderboardButton.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            val count = sync.unknownCarCount().getOrNull()
+            binding.cleanLeaderboardButton.isEnabled = true
+            if (count == null) {
+                toast(getString(R.string.admin_clean_failed, getString(R.string.ov_load_error)))
+                return@launch
+            }
+            if (count == 0) {
+                toast(getString(R.string.admin_clean_none))
+                return@launch
+            }
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.admin_clean_leaderboard)
+                .setMessage(getString(R.string.admin_clean_confirm, count))
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.admin_clean_leaderboard) { _, _ -> doPurge() }
+                .show()
+        }
+    }
+
+    private fun doPurge() {
+        binding.cleanLeaderboardButton.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            val r = sync.purgeUnknownCars()
+            binding.cleanLeaderboardButton.isEnabled = true
+            r.onSuccess { toast(getString(R.string.admin_clean_done, it)) }
+                .onFailure { toast(getString(R.string.admin_clean_failed, it.message ?: "")) }
+            load()
+        }
+    }
+
+    private fun toast(msg: String) =
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
 
     override fun onResume() {
         super.onResume()

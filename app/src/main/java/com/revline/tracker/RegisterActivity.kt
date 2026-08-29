@@ -36,6 +36,10 @@ class RegisterActivity : AppCompatActivity() {
         val email = binding.emailInput.text?.toString()?.trim().orEmpty()
         val username = binding.usernameInput.text?.toString()?.trim().orEmpty()
         val password = binding.passwordInput.text?.toString().orEmpty()
+        val carMake = binding.makeInput.text?.toString()?.trim().orEmpty()
+        val carModel = binding.modelInput.text?.toString()?.trim().orEmpty()
+        val carYear = binding.yearInput.text?.toString()?.trim()?.toIntOrNull()
+
         if (email.isEmpty() || username.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, R.string.error_fill_all_fields, Toast.LENGTH_SHORT).show()
             return
@@ -45,9 +49,20 @@ class RegisterActivity : AppCompatActivity() {
             return
         }
         binding.passwordLayout.error = null
+        binding.makeLayout.error = null
+        binding.modelLayout.error = null
+        if (carMake.isEmpty()) {
+            binding.makeLayout.error = getString(R.string.error_car_required)
+            return
+        }
+        if (carModel.isEmpty()) {
+            binding.modelLayout.error = getString(R.string.error_car_required)
+            return
+        }
+
         setBusy(true)
         lifecycleScope.launch {
-            when (val result = sync.register(email, password, username)) {
+            when (val result = sync.register(email, password, username, carMake, carModel, carYear)) {
                 is AuthOutcome.Success -> {
                     Toast.makeText(this@RegisterActivity, R.string.register_success, Toast.LENGTH_SHORT).show()
                     startActivity(
