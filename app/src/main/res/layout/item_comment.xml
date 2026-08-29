@@ -49,9 +49,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp"
+                android:fontFamily="@font/rl_mono"
+                android:textColor="@color/print_faint"
+                android:textSize="11sp"
                 tools:text="2h" />
         </LinearLayout>
 

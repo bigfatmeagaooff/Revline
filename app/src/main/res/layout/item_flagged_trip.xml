@@ -3,12 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Revline.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginTop="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:layout_marginTop="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -65,7 +64,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/rejectButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Revline.Button.Outline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -73,8 +72,10 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/approveButton"
+                style="@style/Widget.Revline.Button.Primary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minHeight="0dp"
                 android:text="@string/admin_approve" />
         </LinearLayout>
     </LinearLayout>

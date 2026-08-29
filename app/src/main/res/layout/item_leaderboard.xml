@@ -1,87 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!-- One line of the timing sheet. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Widget.Revline.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginTop="8dp">
+    android:minHeight="64dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:background="@drawable/row_rule_bg"
+    android:foreground="?attr/selectableItemBackground"
+    android:baselineAligned="false">
+
+    <View
+        android:id="@+id/leftAccent"
+        android:layout_width="3dp"
+        android:layout_height="match_parent"
+        android:background="@color/redline"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/rank"
+        style="@style/Text.Readout"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/print_dim"
+        android:textSize="15sp"
+        tools:text="P1" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="72dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <View
-            android:id="@+id/leftAccent"
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:layout_marginVertical="12dp"
-            android:background="@color/text_primary"
-            android:visibility="gone"
-            tools:visibility="visible" />
+        android:layout_weight="1"
+        android:layout_marginEnd="12dp"
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/rank"
-            style="@style/Text.Display"
-            android:layout_width="52dp"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="@color/text_secondary"
-            android:textSize="28sp"
-            tools:text="#1" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/username"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                tools:text="The_crv_guy" />
-
-            <TextView
-                android:id="@+id/car"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                tools:text="2001 Honda CRV" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/value"
-            style="@style/Text.Display"
+            android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/accent_red"
-            android:textSize="22sp"
-            tools:text="124" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/print"
+            android:textSize="15sp"
+            tools:text="m_delacroix" />
 
         <TextView
-            android:id="@+id/unit"
-            style="@style/Text.Unit"
+            android:id="@+id/car"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="16dp"
-            android:textSize="13sp"
-            tools:text="km/h" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:fontFamily="@font/inter_regular"
+            android:textColor="@color/print_faint"
+            android:textSize="12sp"
+            tools:text="2001 Honda CRV" />
     </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+    <TextView
+        android:id="@+id/value"
+        style="@style/Text.Display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/redline"
+        android:textSize="26sp"
+        tools:text="178" />
+
+    <TextView
+        android:id="@+id/unit"
+        style="@style/Text.Readout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="18dp"
+        android:textColor="@color/print_faint"
+        android:textSize="12sp"
+        tools:text="km/h" />
+
+</LinearLayout>

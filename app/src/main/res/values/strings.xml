@@ -12,6 +12,8 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="trip_actual">%1$.0f min actual</string>
+    <string name="trip_stub">RUN · %1$s</string>
+    <string name="trip_avg">avg %1$d</string>
 
     <!-- MainActivity -->
     <string name="main_title">Your Drives</string>
@@ -37,12 +39,14 @@
     <string name="error_minutes_required">Enter the predicted minutes</string>
     <string name="location_permission_required">Location permission is required to track your drive.</string>
     <string name="tracking_in_progress">Tracking your drive…</string>
-    <string name="tracking_label">Tracking</string>
+    <string name="tracking_label">Recording</string>
+    <string name="tracking_gps_ok">GPS lock</string>
+    <string name="label_elapsed">Elapsed</string>
     <string name="stop_confirm_title">Stop this drive?</string>
     <string name="stop_and_save">Stop &amp; Save</string>
     <string name="cancel">Cancel</string>
     <string name="elapsed_format">%1$02d:%2$02d</string>
-    <string name="gforce_live">Lateral %1$.2f G   |   Accel/Brake %2$+.2f G</string>
+    <string name="gforce_live">LAT %1$.2f G   ·   ACC/BRK %2$+.2f G</string>
 
     <!-- Notification -->
     <string name="notification_channel_name">Drive tracking</string>
@@ -63,7 +67,7 @@
     <string name="delta_over">+%1$d min</string>
     <string name="delta_under">−%1$d min</string>
     <string name="delta_exact">spot on</string>
-    <string name="prediction_prompt">Add Google Maps prediction? (optional)</string>
+    <string name="prediction_prompt">Log the Maps estimate — optional</string>
     <string name="prediction_hint">Maps minutes</string>
     <string name="prediction_add">Add</string>
 
@@ -72,7 +76,7 @@
     <string name="label_moving_time">Moving time</string>
     <string name="label_0100">0–100</string>
     <string name="label_peak_g">Peak G</string>
-    <string name="hardest_braking_simple">Hardest braking: %1$.1f G</string>
+    <string name="hardest_braking_simple">HARDEST BRAKING   %1$.1f G</string>
     <string name="share">Share</string>
     <string name="share_card">Share drive card</string>
     <string name="share_failed">Couldn\'t create the share image</string>
@@ -104,6 +108,8 @@
 
     <!-- Route map -->
     <string name="label_route_section">Route</string>
+    <string name="slip_masthead">Revline Timing</string>
+    <string name="label_trap_speed">Trap speed</string>
     <string name="route_legend">Line color = speed (green = slow → red = fast)</string>
     <string name="route_empty">No route recorded for this drive — GPS signal may have been unavailable.</string>
     <string name="no_gps_data">No GPS data</string>
@@ -221,7 +227,7 @@
     <string name="cat_top_speed">Top speed</string>
     <string name="cat_zero_hundred">0–100</string>
     <string name="cat_longest">Longest stretch</string>
-    <string name="leaderboard_rank">#%1$d</string>
+    <string name="leaderboard_rank">P%1$d</string>
     <string name="unknown_car">Unknown car</string>
     <string name="leaderboard_empty">No entries yet — be the first!</string>
     <string name="leaderboard_empty_v2">No drives on the board yet.\nComplete a drive to appear here.</string>

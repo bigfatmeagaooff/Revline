@@ -1,108 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ===== Typography ===== -->
+    <!-- ================================================================
+         Revline "Time Slip" — typography
+         Barlow Condensed = hero numerals · JetBrains Mono = the readout
+         column · Inter = labels and body. Slips are torn paper: corners
+         stay near-zero.
+         ================================================================ -->
 
-    <!-- Big speed/rank numbers: Barlow Condensed Bold, tight tracking -->
+    <!-- Hero numerals: top speed, rank, elapsed. Barlow Condensed Bold. -->
     <style name="Text.Display" parent="">
-        <item name="android:fontFamily">@font/barlow_condensed_bold</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:fontFamily">@font/rl_display</item>
+        <item name="fontFamily">@font/rl_display</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/print</item>
+        <item name="android:letterSpacing">-0.015</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
-    <!-- Units (km/h, km, min, s, G) paired with a number -->
+    <!-- The slip readout column — right-aligned values. JetBrains Mono. -->
+    <style name="Text.Readout" parent="">
+        <item name="android:fontFamily">@font/rl_mono</item>
+        <item name="fontFamily">@font/rl_mono</item>
+        <item name="android:textColor">@color/print</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- Units (km/h, km, s, G) trailing a number. -->
     <style name="Text.Unit" parent="">
-        <item name="android:fontFamily">@font/barlow_condensed_regular</item>
-        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/rl_display</item>
+        <item name="fontFamily">@font/rl_display</item>
+        <item name="android:textColor">@color/print_dim</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
-    <!-- Small all-caps stat labels -->
+    <!-- Row label — the "key" side of a slip row. -->
     <style name="Text.Label" parent="">
         <item name="android:fontFamily">@font/inter_medium</item>
-        <item name="android:textColor">@color/text_muted</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:textColor">@color/print_dim</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.08</item>
+        <item name="android:letterSpacing">0.06</item>
     </style>
 
-    <!-- Body label -->
-    <style name="Text.Body" parent="">
-        <item name="android:fontFamily">@font/inter_regular</item>
-        <item name="android:textColor">@color/text_secondary</item>
-    </style>
-
-    <!-- Section header (TODAY, G-FORCE, ACCOUNT...) -->
-    <style name="Text.Section" parent="">
-        <item name="android:fontFamily">@font/inter_medium</item>
-        <item name="android:textColor">@color/text_muted</item>
+    <!-- Slip stub / ticket header — tiny, wide-tracked monospace. -->
+    <style name="Text.Stub" parent="">
+        <item name="android:fontFamily">@font/rl_mono</item>
+        <item name="fontFamily">@font/rl_mono</item>
+        <item name="android:textColor">@color/print_faint</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.12</item>
-    </style>
-
-    <!-- App wordmark -->
-    <style name="Text.Wordmark" parent="">
-        <item name="android:fontFamily">@font/barlow_condensed_bold</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:letterSpacing">0.20</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
-    <!-- ===== Buttons ===== -->
+    <!-- Body copy. -->
+    <style name="Text.Body" parent="">
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="fontFamily">@font/inter_regular</item>
+        <item name="android:textColor">@color/print_dim</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+    </style>
 
+    <!-- Section header (ROUTE, G-FORCE, DRIVE DETAIL). -->
+    <style name="Text.Section" parent="">
+        <item name="android:fontFamily">@font/rl_mono</item>
+        <item name="fontFamily">@font/rl_mono</item>
+        <item name="android:textColor">@color/print_faint</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.16</item>
+    </style>
+
+    <!-- App wordmark. -->
+    <style name="Text.Wordmark" parent="">
+        <item name="android:fontFamily">@font/rl_display</item>
+        <item name="fontFamily">@font/rl_display</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/print</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- ================================================================
+         Buttons — sharp corners, Barlow Condensed, uppercase.
+         ================================================================ -->
     <style name="Widget.Revline.Button.Primary" parent="Widget.Material3.Button">
-        <item name="android:fontFamily">@font/barlow_condensed_bold</item>
+        <item name="android:fontFamily">@font/rl_display</item>
+        <item name="fontFamily">@font/rl_display</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.04</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="backgroundTint">@color/accent_red</item>
-        <item name="cornerRadius">8dp</item>
-        <item name="android:minHeight">60dp</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="backgroundTint">@color/redline</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:minHeight">58dp</item>
+        <item name="rippleColor">#33000000</item>
     </style>
 
     <style name="Widget.Revline.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:fontFamily">@font/inter_medium</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="strokeColor">#FF333333</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:textColor">@color/print</item>
+        <item name="strokeColor">@color/rule</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="rippleColor">#1AFFFFFF</item>
     </style>
 
     <style name="Widget.Revline.Button.OutlineRed" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:fontFamily">@font/inter_medium</item>
-        <item name="android:textColor">@color/accent_red</item>
-        <item name="strokeColor">@color/accent_red</item>
-        <item name="cornerRadius">8dp</item>
+        <item name="fontFamily">@font/inter_medium</item>
+        <item name="android:textColor">@color/redline</item>
+        <item name="strokeColor">@color/redline_dim</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cornerRadius">2dp</item>
+        <item name="android:minHeight">52dp</item>
     </style>
 
-    <!-- ===== Inputs ===== -->
+    <!-- ================================================================
+         Inputs — flat slip field, redline underline on focus.
+         ================================================================ -->
     <style name="Widget.Revline.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
-        <item name="boxBackgroundColor">@color/bg_elevated</item>
-        <item name="boxStrokeColor">@color/accent_red</item>
+        <item name="boxBackgroundColor">@color/slip_high</item>
+        <item name="boxStrokeColor">@color/redline</item>
         <item name="boxStrokeWidth">0dp</item>
-        <item name="boxStrokeWidthFocused">1dp</item>
-        <item name="hintTextColor">@color/text_secondary</item>
-        <item name="android:textColorHint">@color/text_secondary</item>
-        <item name="boxCornerRadiusTopStart">8dp</item>
-        <item name="boxCornerRadiusTopEnd">8dp</item>
-        <item name="boxCornerRadiusBottomStart">8dp</item>
-        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/print_dim</item>
+        <item name="android:textColorHint">@color/print_faint</item>
+        <item name="boxCornerRadiusTopStart">2dp</item>
+        <item name="boxCornerRadiusTopEnd">2dp</item>
+        <item name="boxCornerRadiusBottomStart">2dp</item>
+        <item name="boxCornerRadiusBottomEnd">2dp</item>
     </style>
 
-    <!-- Tab labels -->
+    <!-- Tab labels (leaderboard, admin). -->
     <style name="TextAppearance.Revline.Tab" parent="TextAppearance.Material3.TitleSmall">
-        <item name="android:fontFamily">@font/barlow_condensed_bold</item>
-        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@font/rl_mono</item>
+        <item name="fontFamily">@font/rl_mono</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:letterSpacing">0.02</item>
+        <item name="android:letterSpacing">0.12</item>
     </style>
 
-    <!-- ===== Cards ===== -->
+    <!-- Card = a slip. Flat, square, no elevation. -->
     <style name="Widget.Revline.Card" parent="Widget.Material3.CardView.Filled">
-        <item name="cardBackgroundColor">@color/bg_card</item>
-        <item name="cardCornerRadius">8dp</item>
+        <item name="cardBackgroundColor">@color/slip</item>
+        <item name="cardCornerRadius">2dp</item>
         <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/rule</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- ================================================================
+         Slip row — label ···· value. Used by the summary + admin lists.
+         ================================================================ -->
+    <style name="DetailRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:baselineAligned">false</item>
+    </style>
+
+    <style name="DetailLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/print_dim</item>
+    </style>
+
+    <style name="DetailValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/rl_mono</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/print</item>
+        <item name="android:gravity">end</item>
     </style>
 
 </resources>

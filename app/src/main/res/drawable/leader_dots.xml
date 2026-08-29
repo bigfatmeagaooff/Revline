@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dotted leader between a slip row's label and its value. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/leader_dot"
+    android:tileMode="repeat"
+    android:gravity="center_vertical|fill_horizontal" />

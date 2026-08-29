@@ -1,6 +1,5 @@
 package com.revline.tracker.ui
 
-import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -58,30 +57,37 @@ class TripListAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(trip: Trip) {
             val ctx = binding.root.context
-            binding.tripDate.text = DATE_FMT.format(Date(trip.startTime)).uppercase(Locale.getDefault())
+            val dash = ctx.getString(R.string.value_dash)
+
+            binding.tripDate.text = ctx.getString(
+                R.string.trip_stub,
+                DATE_FMT.format(Date(trip.startTime)).uppercase(Locale.getDefault())
+            )
 
             binding.tripTopSpeed.text = trip.topSpeedKmh
-                ?.takeIf { it > 0f }?.roundToInt()?.toString()
-                ?: ctx.getString(R.string.value_dash)
-            binding.tripDistance.text = trip.distanceKm
-                ?.let { String.format(Locale.getDefault(), "%.1f", it) }
-                ?: ctx.getString(R.string.value_dash)
+                ?.takeIf { it > 0f }?.roundToInt()?.toString() ?: dash
 
-            val actual = trip.actualDurationMinutes
-            if (actual != null) {
-                binding.tripActual.visibility = android.view.View.VISIBLE
-                binding.tripActual.text = ctx.getString(R.string.trip_actual, actual)
-            } else {
-                binding.tripActual.visibility = android.view.View.GONE
+            // label · value readout: distance · elapsed · avg
+            val parts = mutableListOf<String>()
+            trip.distanceKm?.let { parts += String.format(Locale.getDefault(), "%.1f km", it) }
+            trip.actualDurationMinutes?.let { parts += formatDuration(it) }
+            trip.avgSpeedKmh?.takeIf { it > 0f }?.let {
+                parts += ctx.getString(R.string.trip_avg, it.roundToInt())
             }
+            binding.tripReadout.text = parts.joinToString("   ·   ")
 
-            val uploaded = trip.uploadedAt != null
-            binding.statusBadge.text = if (uploaded) "✓" else ctx.getString(R.string.value_dash)
-            val tint = if (uploaded) R.color.success else R.color.text_muted
-            binding.statusBadge.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(ctx, tint))
+            // Spine: redline once the run is on the leaderboard, faint while local-only.
+            val filed = trip.uploadedAt != null
+            binding.statusSpine.setBackgroundColor(
+                ContextCompat.getColor(ctx, if (filed) R.color.redline else R.color.print_faint)
+            )
 
             binding.root.setOnClickListener { onClick(trip) }
+        }
+
+        private fun formatDuration(minutes: Float): String {
+            val total = (minutes * 60).roundToInt()
+            return String.format(Locale.getDefault(), "%d:%02d", total / 60, total % 60)
         }
     }
 

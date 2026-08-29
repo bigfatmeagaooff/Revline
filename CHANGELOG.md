@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Full UI redesign — "Time Slip".** Every drive is presented like a drag-strip
+  timing printout: torn-ticket perforated edges, a run stub, trap speed in a truer
+  red (`#F5121C`), and every stat as a ruled row with a dotted leader to a
+  monospace value. The leaderboard becomes a timing sheet; the shareable card is a
+  literal printout. New palette (blue-slate ink, staging-green as a second accent
+  used only for live/PB), Barlow Condensed + JetBrains Mono + Inter.
+  - **Fixes a latent bug:** the bundled Barlow Condensed / Inter fonts were never
+    actually loading — every screen silently fell back to Roboto. They now load via
+    `font-family` resources (`rl_display`, `rl_mono`).
+  - Route map knocked back to dark greyscale so it recedes; route line runs cold
+    slate → redline by speed. G-force graph on the palette with a ±0.5 G grid.
+  - versionCode 18 → 19, versionName 3.7.0 → 3.8.0
+
 ### Added
 
 - **Crash & error reporting (Sentry).** `sentry-android` auto-initialises from the

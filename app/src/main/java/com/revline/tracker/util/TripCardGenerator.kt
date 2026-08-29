@@ -18,190 +18,222 @@ import kotlin.math.roundToInt
 
 /**
  * Renders a shareable drive card as a [Bitmap] using plain Canvas drawing — no image
- * library. Revline's own look: near-black background, racing-red hero number, Barlow
- * Condensed display type, and a speed-coloured mini route.
+ * library. Revline's "Time Slip" look: the drive as a drag-strip timing printout —
+ * torn-ticket edges, a run stub, redline trap speed, ruled rows with dotted leaders.
  *
- * Sized 1080×1350 (4:5), which is the portrait ratio Instagram/Snapchat post well.
+ * Sized 1080×1350 (4:5), the portrait ratio Instagram/Snapchat post well.
  */
 object TripCardGenerator {
 
     private const val W = 1080
     private const val H = 1350
-    private const val PAD = 72f
+    private const val MARGIN = 48f          // ink border around the slip
+    private const val PAD = 56f             // slip inner padding
+    private const val NOTCH_R = 22f
 
-    // Palette mirrors colors.xml so the card matches the app.
-    private const val BG = 0xFF0A0A0A.toInt()
-    private const val CARD = 0xFF111111.toInt()
-    private const val RED = 0xFFE8000D.toInt()
-    private const val WHITE = 0xFFFFFFFF.toInt()
-    private const val GREY = 0xFF888888.toInt()
-    private const val MUTED = 0xFF444444.toInt()
+    // Palette mirrors colors.xml (Time Slip).
+    private const val INK = 0xFF0E0F12.toInt()
+    private const val SLIP = 0xFF16181D.toInt()
+    private const val RULE = 0xFF2A2E36.toInt()
+    private const val RED = 0xFFF5121C.toInt()
+    private const val PRINT = 0xFFECEEF2.toInt()
+    private const val DIM = 0xFF8A9099.toInt()
+    private const val FAINT = 0xFF565C66.toInt()
+    private const val SLATE = 0xFF556170.toInt()
 
-    private val DATE_FMT = SimpleDateFormat("EEE d MMM yyyy", Locale.getDefault())
+    private val STUB_FMT = SimpleDateFormat("EEE d MMM yyyy · h:mm a", Locale.getDefault())
 
-    /**
-     * Draws the card. [segments] are the cleaned route segments (may be empty — the
-     * route panel is simply skipped), [zeroToHundredSec] is optional.
-     */
     fun render(
         context: Context,
         trip: Trip,
         segments: List<SpeedCalculator.Segment>,
         zeroToHundredSec: Float?
     ): Bitmap {
-        val display = ResourcesCompat.getFont(context, R.font.barlow_condensed_bold)
-            ?: Typeface.DEFAULT_BOLD
+        val display = ResourcesCompat.getFont(context, R.font.rl_display) ?: Typeface.DEFAULT_BOLD
+        val mono = ResourcesCompat.getFont(context, R.font.rl_mono) ?: Typeface.MONOSPACE
         val body = ResourcesCompat.getFont(context, R.font.inter_medium) ?: Typeface.DEFAULT
 
         val bitmap = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawColor(BG)
+        canvas.drawColor(INK)
+
+        val slipL = MARGIN
+        val slipR = W - MARGIN
+        val slipT = MARGIN
+        val slipB = H - MARGIN
+
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        fill.color = SLIP
+        canvas.drawRect(slipL, slipT, slipR, slipB, fill)
+        drawPerforations(canvas, slipL, slipR, slipT, slipB, fill)
 
         val text = Paint(Paint.ANTI_ALIAS_FLAG)
-        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        val left = slipL + PAD
+        val right = slipR - PAD
 
-        // --- Header: wordmark + red rule, date on the right ---
-        text.typeface = display
-        text.color = WHITE
-        text.textSize = 58f
+        // --- Masthead stub ---
+        text.typeface = mono
+        text.color = FAINT
+        text.textSize = 24f
         text.textAlign = Paint.Align.LEFT
-        canvas.drawText("REVLINE", PAD, PAD + 50f, text)
-
-        fill.color = RED
-        canvas.drawRect(PAD, PAD + 66f, PAD + 132f, PAD + 72f, fill)
-
-        text.typeface = body
-        text.color = GREY
-        text.textSize = 30f
+        canvas.drawText("REVLINE TIMING", left, slipT + 78f, text)
         text.textAlign = Paint.Align.RIGHT
-        canvas.drawText(DATE_FMT.format(Date(trip.startTime)).uppercase(Locale.getDefault()), W - PAD, PAD + 50f, text)
+        canvas.drawText(
+            STUB_FMT.format(Date(trip.startTime)).uppercase(Locale.getDefault()),
+            right, slipT + 78f, text
+        )
 
-        // --- Hero: top speed ---
+        // --- Hero: trap speed ---
+        text.textAlign = Paint.Align.LEFT
+        text.typeface = body
+        text.color = FAINT
+        text.textSize = 28f
+        canvas.drawText("TRAP SPEED", left, slipT + 150f, text)
+
         val topSpeed = trip.topSpeedKmh?.takeIf { it > 0f }?.roundToInt()?.toString() ?: "—"
         text.typeface = display
         text.color = RED
         text.textSize = 300f
-        text.textAlign = Paint.Align.LEFT
-        val heroBaseline = 480f
-        canvas.drawText(topSpeed, PAD, heroBaseline, text)
-
+        val heroBaseline = slipT + 400f
+        canvas.drawText(topSpeed, left, heroBaseline, text)
         val heroWidth = text.measureText(topSpeed)
-        text.color = GREY
+        text.color = DIM
         text.textSize = 64f
-        canvas.drawText("KM/H", PAD + heroWidth + 20f, heroBaseline, text)
+        canvas.drawText("km/h", left + heroWidth + 24f, heroBaseline, text)
 
-        text.typeface = body
-        text.color = MUTED
-        text.textSize = 28f
-        canvas.drawText("TOP SPEED", PAD, heroBaseline + 48f, text)
+        // --- Ruled rows ---
+        var y = heroBaseline + 70f
+        drawRule(canvas, left, right, y, fill)
+        y += 20f
+        val rows = buildList {
+            trip.distanceKm?.let { add("DISTANCE" to String.format(Locale.getDefault(), "%.1f km", it)) }
+            trip.actualDurationMinutes?.let {
+                val s = (it * 60).roundToInt()
+                add("ELAPSED" to String.format(Locale.getDefault(), "%d:%02d", s / 60, s % 60))
+            }
+            trip.avgSpeedKmh?.takeIf { it > 0f }?.let {
+                add("AVG SPEED" to "${it.roundToInt()} km/h")
+            }
+            zeroToHundredSec?.let { add("0–100" to String.format(Locale.getDefault(), "%.2f s", it)) }
+        }
+        for ((k, v) in rows) {
+            y += 74f
+            drawSlipRow(canvas, text, body, mono, left, right, y, k, v)
+            drawRule(canvas, left, right, y + 26f, fill)
+        }
 
         // --- Route panel ---
-        val routeTop = heroBaseline + 96f
-        val routeBottom = routeTop + 420f
-        fill.color = CARD
-        canvas.drawRect(PAD, routeTop, W - PAD, routeBottom, fill)
-        drawRoute(canvas, segments, PAD + 28f, routeTop + 28f, W - PAD - 28f, routeBottom - 28f)
+        val routeTop = y + 60f
+        val routeBottom = (H - MARGIN - PAD - 96f).coerceAtLeast(routeTop + 260f)
+        fill.color = INK
+        canvas.drawRect(left, routeTop, right, routeBottom, fill)
+        fill.color = SLIP
+        drawRoute(canvas, segments, left + 24f, routeTop + 24f, right - 24f, routeBottom - 24f)
 
-        // --- Stat row ---
-        val statTop = routeBottom + 86f
-        val third = (W - PAD * 2) / 3f
-        stat(canvas, display, body, PAD, statTop, "DISTANCE",
-            trip.distanceKm?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "—", "KM")
-        stat(canvas, display, body, PAD + third, statTop, "DURATION",
-            trip.actualDurationMinutes?.let { String.format(Locale.getDefault(), "%.0f", it) } ?: "—", "MIN")
-        stat(canvas, display, body, PAD + third * 2, statTop, "0–100",
-            zeroToHundredSec?.let { String.format(Locale.getDefault(), "%.1f", it) } ?: "—", "S")
+        // --- Footer: filed stamp + car ---
+        text.typeface = mono
+        text.textAlign = Paint.Align.LEFT
+        text.textSize = 24f
+        val filed = trip.uploadedAt != null
+        text.color = if (filed) 0xFFD8FF3E.toInt() else FAINT
+        canvas.drawText(
+            if (filed) "✓ FILED TO LEADERBOARD" else "LOCAL RUN — NOT FILED",
+            left, routeBottom + 54f, text
+        )
 
-        // --- Footer: car (from the saved car profile) ---
         val profile = CarProfile.load(context)
-        val car = listOfNotNull(profile.year?.toString(), profile.make, profile.model)
-            .joinToString(" ")
+        val car = listOfNotNull(profile.year?.toString(), profile.make, profile.model).joinToString(" ")
         if (car.isNotBlank()) {
-            text.typeface = body
-            text.color = GREY
-            text.textSize = 32f
-            text.textAlign = Paint.Align.LEFT
-            canvas.drawText(car.uppercase(Locale.getDefault()), PAD, H - PAD, text)
+            text.textAlign = Paint.Align.RIGHT
+            text.color = DIM
+            canvas.drawText(car.uppercase(Locale.getDefault()), right, routeBottom + 54f, text)
         }
 
         return bitmap
     }
 
-    /** One stat column: small label, big number, small unit. */
-    private fun stat(
-        canvas: Canvas,
-        display: Typeface,
-        body: Typeface,
-        x: Float,
-        top: Float,
-        label: String,
-        value: String,
-        unit: String
+    private fun drawPerforations(
+        canvas: Canvas, l: Float, r: Float, t: Float, b: Float, fill: Paint
     ) {
-        val text = Paint(Paint.ANTI_ALIAS_FLAG)
-        text.textAlign = Paint.Align.LEFT
-
-        text.typeface = body
-        text.color = MUTED
-        text.textSize = 26f
-        canvas.drawText(label, x, top, text)
-
-        text.typeface = display
-        text.color = WHITE
-        text.textSize = 96f
-        canvas.drawText(value, x, top + 96f, text)
-
-        val valueWidth = text.measureText(value)
-        text.color = GREY
-        text.textSize = 34f
-        canvas.drawText(unit, x + valueWidth + 10f, top + 96f, text)
+        val prev = fill.color
+        fill.color = INK
+        var x = l + NOTCH_R
+        while (x < r) {
+            canvas.drawCircle(x, t, NOTCH_R, fill)
+            canvas.drawCircle(x, b, NOTCH_R, fill)
+            x += NOTCH_R * 2.4f
+        }
+        fill.color = prev
     }
 
-    /**
-     * Draws the route scaled to fit the given box, preserving aspect ratio, coloured
-     * by speed the same way the summary map is. Falls back to a "no route" note.
-     */
+    private fun drawRule(canvas: Canvas, l: Float, r: Float, y: Float, fill: Paint) {
+        val prev = fill.color
+        fill.color = RULE
+        canvas.drawRect(l, y, r, y + 1.5f, fill)
+        fill.color = prev
+    }
+
+    private fun drawSlipRow(
+        canvas: Canvas, text: Paint, body: Typeface, mono: Typeface,
+        left: Float, right: Float, baseline: Float, label: String, value: String
+    ) {
+        text.typeface = body
+        text.color = DIM
+        text.textSize = 30f
+        text.textAlign = Paint.Align.LEFT
+        canvas.drawText(label, left, baseline, text)
+        val labelW = text.measureText(label)
+
+        text.typeface = mono
+        text.color = PRINT
+        text.textSize = 34f
+        text.textAlign = Paint.Align.RIGHT
+        canvas.drawText(value, right, baseline, text)
+        val valueW = text.measureText(value)
+
+        // dotted leader between them
+        text.color = FAINT
+        text.textAlign = Paint.Align.LEFT
+        val dotStart = left + labelW + 16f
+        val dotEnd = right - valueW - 16f
+        var dx = dotStart
+        val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = FAINT; style = Paint.Style.FILL }
+        while (dx < dotEnd) {
+            canvas.drawCircle(dx, baseline - 10f, 2f, dot)
+            dx += 12f
+        }
+    }
+
     private fun drawRoute(
-        canvas: Canvas,
-        segments: List<SpeedCalculator.Segment>,
-        left: Float,
-        top: Float,
-        right: Float,
-        bottom: Float
+        canvas: Canvas, segments: List<SpeedCalculator.Segment>,
+        left: Float, top: Float, right: Float, bottom: Float
     ) {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         if (segments.size < 2) {
-            paint.color = MUTED
-            paint.textSize = 30f
+            paint.color = FAINT
+            paint.textSize = 28f
             paint.textAlign = Paint.Align.CENTER
+            paint.typeface = Typeface.MONOSPACE
             canvas.drawText("NO ROUTE DATA", (left + right) / 2f, (top + bottom) / 2f, paint)
             return
         }
 
-        var minLat = Double.MAX_VALUE
-        var maxLat = -Double.MAX_VALUE
-        var minLon = Double.MAX_VALUE
-        var maxLon = -Double.MAX_VALUE
+        var minLat = Double.MAX_VALUE; var maxLat = -Double.MAX_VALUE
+        var minLon = Double.MAX_VALUE; var maxLon = -Double.MAX_VALUE
         for (s in segments) {
-            minLat = minOf(minLat, s.startLat, s.endLat)
-            maxLat = maxOf(maxLat, s.startLat, s.endLat)
-            minLon = minOf(minLon, s.startLon, s.endLon)
-            maxLon = maxOf(maxLon, s.startLon, s.endLon)
+            minLat = minOf(minLat, s.startLat, s.endLat); maxLat = maxOf(maxLat, s.startLat, s.endLat)
+            minLon = minOf(minLon, s.startLon, s.endLon); maxLon = maxOf(maxLon, s.startLon, s.endLon)
         }
         val latSpan = (maxLat - minLat).takeIf { it > 1e-9 } ?: 1e-9
         val lonSpan = (maxLon - minLon).takeIf { it > 1e-9 } ?: 1e-9
 
-        // Uniform scale so the shape isn't distorted, then centre it in the box.
         val boxW = right - left
         val boxH = bottom - top
         val scale = minOf(boxW / lonSpan, boxH / latSpan)
-        val drawW = (lonSpan * scale).toFloat()
-        val drawH = (latSpan * scale).toFloat()
-        val offsetX = left + (boxW - drawW) / 2f
-        val offsetY = top + (boxH - drawH) / 2f
+        val offsetX = left + (boxW - (lonSpan * scale).toFloat()) / 2f
+        val offsetY = top + (boxH - (latSpan * scale).toFloat()) / 2f
 
         fun px(lon: Double) = (offsetX + (lon - minLon) * scale).toFloat()
-        // Latitude grows northward but screen Y grows downward, so invert.
         fun py(lat: Double) = (offsetY + (maxLat - lat) * scale).toFloat()
 
         val speeds = segments.map { it.speedKmh }.sorted()
@@ -209,9 +241,8 @@ object TripCardGenerator {
         val hi = speeds[(speeds.size * 0.95f).toInt().coerceIn(0, speeds.size - 1)]
 
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 7f
+        paint.strokeWidth = 8f
         paint.strokeCap = Paint.Cap.ROUND
-
         for (s in segments) {
             val t = if (hi > lo) ((s.speedKmh - lo) / (hi - lo)).coerceIn(0f, 1f) else 0.5f
             paint.color = speedColor(t)
@@ -219,17 +250,18 @@ object TripCardGenerator {
         }
     }
 
-    /** Green (slow) → yellow → red (fast), matching the summary map. */
-    private fun speedColor(t: Float): Int = if (t < 0.5f) {
-        Color.rgb((255 * (t / 0.5f)).roundToInt(), 255, 0)
-    } else {
-        Color.rgb(255, (255 * (1 - (t - 0.5f) / 0.5f)).roundToInt(), 0)
+    /** Cold slate (slow) → redline (fast), matching the summary map. */
+    private fun speedColor(t: Float): Int {
+        val e = t.coerceIn(0f, 1f).let { it * it }
+        val cr = 0x55; val cg = 0x61; val cb = 0x70
+        val hr = 0xF5; val hg = 0x12; val hb = 0x1C
+        return Color.rgb(
+            (cr + (hr - cr) * e).roundToInt(),
+            (cg + (hg - cg) * e).roundToInt(),
+            (cb + (hb - cb) * e).roundToInt()
+        )
     }
 
-    /**
-     * Writes the card to app cache as a PNG and returns the file, ready to hand to a
-     * FileProvider share intent. Old cards are replaced rather than piling up.
-     */
     fun writeToCache(context: Context, bitmap: Bitmap): File {
         val dir = File(context.cacheDir, "shares").apply { mkdirs() }
         val file = File(dir, "revline-drive.png")

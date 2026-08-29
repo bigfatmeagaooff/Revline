@@ -56,32 +56,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@color/divider"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:background="@drawable/hairline_frame"
+                android:orientation="vertical"
+                android:divider="@drawable/divider_rule"
+                android:showDividers="middle">
 
                 <include
                     android:id="@+id/cellDrives"
                     layout="@layout/cell_stat"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="1dp"
-                    android:layout_weight="1" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
                 <include
                     android:id="@+id/cellFollowers"
                     layout="@layout/cell_stat"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="1dp"
-                    android:layout_weight="1" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
                 <include
                     android:id="@+id/cellTop"
                     layout="@layout/cell_stat"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton

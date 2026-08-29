@@ -1,24 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Revline design tokens (dark + aggressive motorsport) -->
-    <color name="bg_primary">#0A0A0A</color>
-    <color name="bg_card">#111111</color>
-    <color name="bg_elevated">#1A1A1A</color>
-    <color name="accent_red">#E8000D</color>
-    <color name="accent_red_dim">#8B0008</color>
-    <color name="text_primary">#FFFFFFFF</color>
-    <color name="text_secondary">#FF888888</color>
-    <color name="text_muted">#FF444444</color>
-    <color name="divider">#FF1F1F1F</color>
-    <color name="success">#FF22C55E</color>
-    <color name="warning">#FFF59E0B</color>
+    <!-- ============================================================
+         Revline — "Time Slip" palette
+         Every drive reads like a drag-strip timing printout.
+         ============================================================ -->
 
-    <!-- Legacy aliases (kept so existing layouts pick up the new palette automatically) -->
-    <color name="revline_red">#E8000D</color>
-    <color name="revline_red_dark">#8B0008</color>
-    <color name="revline_ink">#0A0A0A</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="black">#FF000000</color>
-    <color name="active_green">#FF22C55E</color>
-    <color name="muted_gray">#FF888888</color>
+    <!-- Grounds -->
+    <color name="ink">#0E0F12</color>          <!-- app background — blue-slate, not pure black -->
+    <color name="slip">#16181D</color>         <!-- the slip / card surface -->
+    <color name="slip_high">#1E2127</color>    <!-- inputs, pressed states -->
+    <color name="rule">#262A31</color>         <!-- hairline row rules -->
+    <color name="rule_dim">#1C1F25</color>     <!-- faint grid / grouped dividers -->
+
+    <!-- Accents -->
+    <color name="redline">#F5121C</color>      <!-- tach redline paint — speed, ranks, primary CTA -->
+    <color name="redline_dim">#7A0C12</color>
+    <color name="stage">#D8FF3E</color>        <!-- staging-tree light — live / personal best / positive split ONLY -->
+    <color name="stage_dim">#5C6B1A</color>
+
+    <!-- Text — thermal-print off-white -->
+    <color name="print">#ECEEF2</color>        <!-- primary -->
+    <color name="print_dim">#8A9099</color>    <!-- secondary -->
+    <color name="print_faint">#565C66</color>  <!-- labels, captions, disabled -->
+
+    <!-- Semantic (separate from the accent) -->
+    <color name="ok">#4FD08A</color>
+    <color name="warn">#F5B740</color>
+
+    <!-- ============================================================
+         Legacy aliases — old layouts pick up the new palette until
+         each screen is converted. Remove as screens are migrated.
+         ============================================================ -->
+    <color name="bg_primary">#0E0F12</color>
+    <color name="bg_card">#16181D</color>
+    <color name="bg_elevated">#1E2127</color>
+    <color name="accent_red">#F5121C</color>
+    <color name="accent_red_dim">#7A0C12</color>
+    <color name="text_primary">#ECEEF2</color>
+    <color name="text_secondary">#8A9099</color>
+    <color name="text_muted">#565C66</color>
+    <color name="divider">#262A31</color>
+    <color name="success">#4FD08A</color>
+    <color name="warning">#F5B740</color>
+    <color name="revline_red">#F5121C</color>
+    <color name="revline_red_dark">#7A0C12</color>
+    <color name="revline_ink">#0E0F12</color>
+    <color name="white">#FFECEEF2</color>
+    <color name="black">#FF0E0F12</color>
+    <color name="active_green">#FFD8FF3E</color>
+    <color name="muted_gray">#FF8A9099</color>
 </resources>

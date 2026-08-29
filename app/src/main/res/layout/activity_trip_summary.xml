@@ -4,178 +4,173 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary"
+    android:background="@color/ink"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
-        <!-- Upload status strip -->
-        <TextView
-            android:id="@+id/uploadStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_medium"
-            android:gravity="center"
-            android:padding="10dp"
-            android:textColor="@color/bg_primary"
-            android:textSize="13sp"
-            android:visibility="gone"
-            tools:background="@color/success"
-            tools:text="✓ Saved to leaderboard"
-            tools:visibility="visible" />
-
+        <!-- Restored-from-server note -->
         <TextView
             android:id="@+id/restoredNote"
+            style="@style/Text.Body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_regular"
-            android:padding="12dp"
+            android:padding="16dp"
             android:text="@string/restored_note"
-            android:textColor="@color/text_secondary"
             android:textSize="13sp"
             android:visibility="gone" />
 
-        <!-- Section 1: hero stat -->
+        <!-- ================= THE SLIP ================= -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="20dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/bg_card"
+            android:layout_marginVertical="10dp"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:background="@color/slip">
 
+            <!-- Stub line -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="18dp"
+                android:paddingTop="16dp">
+
+                <TextView
+                    style="@style/Text.Stub"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/slip_masthead" />
+
+                <TextView
+                    android:id="@+id/heroDate"
+                    style="@style/Text.Stub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="THU 27 AUG · 3:19 PM" />
+            </LinearLayout>
+
+            <!-- Hero: trap speed -->
             <TextView
                 style="@style/Text.Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:letterSpacing="0.12"
-                android:text="@string/label_top_speed"
-                android:textColor="@color/text_secondary"
+                android:layout_marginTop="18dp"
+                android:paddingHorizontal="18dp"
+                android:text="@string/label_trap_speed"
+                android:textColor="@color/print_faint"
                 android:textSize="11sp" />
 
-            <TextView
-                android:id="@+id/heroTopSpeed"
-                style="@style/Text.Display"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/accent_red"
-                android:textSize="96sp"
-                tools:text="124" />
+                android:paddingHorizontal="18dp"
+                android:orientation="horizontal">
 
-            <TextView
-                style="@style/Text.Unit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/unit_kmh"
-                android:textSize="24sp" />
+                <TextView
+                    android:id="@+id/heroTopSpeed"
+                    style="@style/Text.Display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/redline"
+                    android:textSize="92sp"
+                    tools:text="124" />
 
-            <TextView
-                android:id="@+id/heroDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_muted"
-                android:textSize="13sp"
-                tools:text="Mon 24 Jun · 3:19 PM" />
+                <TextView
+                    style="@style/Text.Unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/unit_kmh"
+                    android:textSize="22sp" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/heroMeta"
-                android:layout_width="wrap_content"
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="14dp"
+                android:background="@color/rule" />
+
+            <!-- Ruled readout rows -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_muted"
-                android:textSize="13sp"
-                tools:text="16.3 km · 23 min" />
+                android:orientation="vertical"
+                android:divider="@drawable/divider_rule"
+                android:showDividers="middle"
+                android:dividerPadding="0dp">
+
+                <include android:id="@+id/cellDistance" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <include android:id="@+id/cellAvgSpeed" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <include android:id="@+id/cellDuration" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <include android:id="@+id/cellMovingTime" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <include android:id="@+id/cellZeroHundred" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <include android:id="@+id/cellPeakG" layout="@layout/cell_stat"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Filed-status foot -->
+            <TextView
+                android:id="@+id/uploadStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/rl_mono"
+                android:gravity="center"
+                android:letterSpacing="0.1"
+                android:padding="11dp"
+                android:textAllCaps="true"
+                android:textColor="@color/ink"
+                android:textSize="11sp"
+                android:visibility="gone"
+                tools:background="@color/stage"
+                tools:text="Filed to leaderboard"
+                tools:visibility="visible" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="6dp" />
         </LinearLayout>
 
-        <!-- Section 2: stats grid 2x3 (1dp dividers via parent bg) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:background="@color/divider"
-            android:orientation="vertical">
-
-            <LinearLayout
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:layout_height="13dp"
+                android:layout_gravity="top"
+                android:background="@drawable/perf_top" />
 
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellDistance"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="1dp" />
-
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellAvgSpeed"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <LinearLayout
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:layout_height="13dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/perf_bottom" />
+        </FrameLayout>
 
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellDuration"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="1dp" />
-
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellMovingTime"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellZeroHundred"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="1dp" />
-
-                <include
-                    layout="@layout/cell_stat"
-                    android:id="@+id/cellPeakG"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Predicted vs actual (optional) -->
+        <!-- Predicted vs actual -->
         <TextView
             android:id="@+id/predictionDelta"
+            style="@style/Text.Body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_medium"
             android:padding="16dp"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/print"
             android:textSize="14sp"
             android:visibility="gone"
             tools:text="Maps said 22 min — took 26 min (+4 min)"
@@ -186,15 +181,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
             android:visibility="gone">
 
             <TextView
-                style="@style/Text.Body"
+                style="@style/Text.Section"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/prediction_prompt"
-                android:textSize="14sp" />
+                android:text="@string/prediction_prompt" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -217,7 +213,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:textColor="@color/text_primary" />
+                        android:textColor="@color/print" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -229,13 +225,23 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Section 3: route map -->
+        <!-- ROUTE -->
+        <TextView
+            style="@style/Text.Section"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/label_route_section" />
+
         <FrameLayout
             android:id="@+id/routeSection"
             android:layout_width="match_parent"
             android:layout_height="240dp"
-            android:layout_marginTop="1dp"
-            android:background="@color/bg_card">
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="10dp"
+            android:background="@color/slip"
+            android:foreground="@drawable/hairline_frame">
 
             <org.osmdroid.views.MapView
                 android:id="@+id/mapView"
@@ -244,127 +250,112 @@
 
             <TextView
                 android:id="@+id/mapPlaceholder"
+                style="@style/Text.Body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:fontFamily="@font/inter_regular"
                 android:text="@string/no_route_data"
-                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:visibility="gone" />
         </FrameLayout>
 
-        <!-- Section 4: G-force (conditional) -->
+        <!-- G-FORCE -->
         <LinearLayout
             android:id="@+id/gforceSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="18dp">
 
             <TextView
                 style="@style/Text.Section"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_gforce_section"
-                android:textColor="@color/text_secondary" />
+                android:layout_marginTop="28dp"
+                android:text="@string/label_gforce_section" />
 
             <com.revline.tracker.ui.GForceGraphView
                 android:id="@+id/gforceGraph"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
                 android:layout_marginTop="12dp"
-                android:background="@color/bg_card" />
+                android:background="@color/slip" />
 
             <TextView
                 android:id="@+id/hardestBrakingValue"
+                style="@style/Text.Readout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                tools:text="Hardest braking: 0.8 G" />
+                android:textColor="@color/print_dim"
+                android:textSize="13sp"
+                tools:text="HARDEST BRAKING  0.81 G" />
         </LinearLayout>
 
-        <!-- Section 4a: drive detail (stops, elevation, cornering) -->
+        <!-- DRIVE DETAIL -->
         <LinearLayout
             android:id="@+id/detailSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingBottom="16dp"
             android:visibility="gone">
 
             <TextView
                 style="@style/Text.Section"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_detail_section"
-                android:textColor="@color/text_secondary" />
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="4dp"
+                android:text="@string/label_detail_section" />
 
             <LinearLayout
-                android:id="@+id/rowStops"
-                style="@style/DetailRow"
-                android:visibility="gone">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:background="@color/slip"
+                android:orientation="vertical"
+                android:divider="@drawable/divider_rule"
+                android:showDividers="middle">
 
-                <TextView style="@style/DetailLabel" android:text="@string/label_stops" />
+                <LinearLayout android:id="@+id/rowStops" style="@style/DetailRow"
+                    android:paddingHorizontal="18dp" android:visibility="gone">
+                    <TextView style="@style/DetailLabel" android:layout_width="0dp"
+                        android:layout_weight="1" android:text="@string/label_stops" />
+                    <TextView android:id="@+id/valueStops" style="@style/DetailValue" tools:text="7" />
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/valueStops"
-                    style="@style/DetailValue"
-                    tools:text="7" />
-            </LinearLayout>
+                <LinearLayout android:id="@+id/rowCorneringPeak" style="@style/DetailRow"
+                    android:paddingHorizontal="18dp" android:visibility="gone">
+                    <TextView style="@style/DetailLabel" android:layout_width="0dp"
+                        android:layout_weight="1" android:text="@string/label_cornering_peak" />
+                    <TextView android:id="@+id/valueCorneringPeak" style="@style/DetailValue" tools:text="0.62 G" />
+                </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/rowCorneringPeak"
-                style="@style/DetailRow"
-                android:visibility="gone">
+                <LinearLayout android:id="@+id/rowCorneringAvg" style="@style/DetailRow"
+                    android:paddingHorizontal="18dp" android:visibility="gone">
+                    <TextView style="@style/DetailLabel" android:layout_width="0dp"
+                        android:layout_weight="1" android:text="@string/label_cornering_avg" />
+                    <TextView android:id="@+id/valueCorneringAvg" style="@style/DetailValue" tools:text="0.28 G" />
+                </LinearLayout>
 
-                <TextView style="@style/DetailLabel" android:text="@string/label_cornering_peak" />
-
-                <TextView
-                    android:id="@+id/valueCorneringPeak"
-                    style="@style/DetailValue"
-                    tools:text="0.62 G" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowCorneringAvg"
-                style="@style/DetailRow"
-                android:visibility="gone">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_cornering_avg" />
-
-                <TextView
-                    android:id="@+id/valueCorneringAvg"
-                    style="@style/DetailValue"
-                    tools:text="0.28 G" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/rowElevation"
-                style="@style/DetailRow"
-                android:visibility="gone">
-
-                <TextView style="@style/DetailLabel" android:text="@string/label_elevation_gain" />
-
-                <TextView
-                    android:id="@+id/valueElevation"
-                    style="@style/DetailValue"
-                    tools:text="↑ 142 m · ↓ 138 m" />
+                <LinearLayout android:id="@+id/rowElevation" style="@style/DetailRow"
+                    android:paddingHorizontal="18dp" android:visibility="gone">
+                    <TextView style="@style/DetailLabel" android:layout_width="0dp"
+                        android:layout_weight="1" android:text="@string/label_elevation_gain" />
+                    <TextView android:id="@+id/valueElevation" style="@style/DetailValue" tools:text="↑ 142 m · ↓ 138 m" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Section 4b: comments (only for uploaded trips) -->
+        <!-- Comments -->
         <LinearLayout
             android:id="@+id/commentsSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="20dp"
             android:visibility="gone">
 
             <com.google.android.material.button.MaterialButton
@@ -376,12 +367,13 @@
                 android:text="@string/view_comments" />
         </LinearLayout>
 
-        <!-- Section 5: actions -->
+        <!-- Actions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="20dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/shareButton"

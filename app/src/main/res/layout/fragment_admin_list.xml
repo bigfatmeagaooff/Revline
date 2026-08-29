@@ -7,11 +7,12 @@
 
     <TextView
         android:id="@+id/filterBanner"
+        style="@style/Text.Stub"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:padding="12dp"
-        android:textColor="@color/white"
+        android:background="@color/slip"
+        android:padding="14dp"
+        android:textColor="@color/redline"
         android:drawablePadding="8dp"
         android:text="@string/admin_trips_filter_banner"
         android:visibility="gone"

@@ -26,14 +26,19 @@
             app:tint="@color/text_primary" />
 
         <TextView
+            style="@style/Text.Section"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:fontFamily="@font/inter_medium"
             android:text="@string/comments_title"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp" />
+            android:textColor="@color/print"
+            android:textSize="13sp" />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/rule" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -59,11 +64,16 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/rule" />
+
     <!-- Input row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_card"
+        android:background="@color/slip"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="12dp"

@@ -2,6 +2,8 @@ package com.revline.tracker
 
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -126,10 +128,7 @@ class TripSummaryActivity : AppCompatActivity() {
 
     private fun bindHero(trip: Trip) {
         binding.heroTopSpeed.text = trip.topSpeedKmh?.takeIf { it > 0f }?.roundToInt()?.toString() ?: dash
-        binding.heroDate.text = HERO_DATE.format(Date(trip.startTime))
-        val dist = trip.distanceKm?.let { String.format(Locale.getDefault(), "%.1f km", it) }
-        val dur = trip.actualDurationMinutes?.let { String.format(Locale.getDefault(), "%.0f min", it) }
-        binding.heroMeta.text = listOfNotNull(dist, dur).joinToString(" · ").ifBlank { dash }
+        binding.heroDate.text = HERO_DATE.format(Date(trip.startTime)).uppercase(Locale.getDefault())
     }
 
     private fun bindGrid(
@@ -320,7 +319,7 @@ class TripSummaryActivity : AppCompatActivity() {
         lifecycleScope.launch {
             when (sync.reuploadTrip(trip.id)) {
                 is UploadResult.Success -> {
-                    showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                    showStrip(getString(R.string.upload_done_strip), R.color.stage, retry = false)
                     binding.reuploadButton.visibility = View.GONE
                     repository.getTrip(trip.id)?.let { bindComments(it) }
                 }
@@ -337,16 +336,16 @@ class TripSummaryActivity : AppCompatActivity() {
             trip.restoredFromServer -> binding.uploadStatus.visibility = View.GONE
             !sync.isLoggedIn -> binding.uploadStatus.visibility = View.GONE
             trip.uploadedAt != null ->
-                showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                showStrip(getString(R.string.upload_done_strip), R.color.stage, retry = false)
             else -> lifecycleScope.launch {
                 when (val r = sync.uploadTrip(trip.id)) {
                     is UploadResult.Success -> {
-                        showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                        showStrip(getString(R.string.upload_done_strip), R.color.stage, retry = false)
                         // The upload stamped a serverTripId — re-read so Comments appears now.
                         repository.getTrip(trip.id)?.let { bindComments(it) }
                     }
                     is UploadResult.AlreadyUploaded ->
-                        showStrip(getString(R.string.upload_done_strip), R.color.success, retry = false)
+                        showStrip(getString(R.string.upload_done_strip), R.color.stage, retry = false)
                     is UploadResult.Failed ->
                         showStrip(getString(R.string.upload_failed_strip), R.color.warning, retry = true) { triggerReupload(trip) }
                     else -> binding.uploadStatus.visibility = View.GONE
@@ -368,6 +367,21 @@ class TripSummaryActivity : AppCompatActivity() {
         binding.mapView.setTileSource(TileSourceFactory.MAPNIK)
         binding.mapView.setMultiTouchControls(true)
         binding.mapView.overlays.add(CopyrightOverlay(this))
+        // Knock the bright street tiles back so the slip's dark world holds:
+        // greyscale, then darken and cool slightly. The route line carries the colour.
+        val mapFilter = ColorMatrixColorFilter(ColorMatrix().apply {
+            setSaturation(0f)
+            postConcat(ColorMatrix(floatArrayOf(
+                0.44f, 0f, 0f, 0f, 6f,
+                0f, 0.44f, 0f, 0f, 6f,
+                0f, 0f, 0.50f, 0f, 14f,
+                0f, 0f, 0f, 1f, 0f
+            )))
+        })
+        binding.mapView.post {
+            binding.mapView.overlayManager.tilesOverlay.setColorFilter(mapFilter)
+            binding.mapView.invalidate()
+        }
         binding.mapView.setOnTouchListener { v, _ ->
             v.parent?.requestDisallowInterceptTouchEvent(true)
             false
@@ -425,10 +439,23 @@ class TripSummaryActivity : AppCompatActivity() {
         binding.mapView.invalidate()
     }
 
-    private fun speedColor(t: Float): Int = if (t < 0.5f) {
-        Color.rgb((255 * (t / 0.5f)).roundToInt(), 255, 0)
-    } else {
-        Color.rgb(255, (255 * (1 - (t - 0.5f) / 0.5f)).roundToInt(), 0)
+    /**
+     * Route colour: cold slate where the drive was slow, burning to redline where it
+     * was fast. Grey→red interpolates clean (no muddy orange mid-tones), and it keeps
+     * the eye on the fast sections — the point of the map.
+     */
+    private fun speedColor(t: Float): Int {
+        val c = t.coerceIn(0f, 1f)
+        // slate #556170  →  redline #F5121C
+        val cold = intArrayOf(0x55, 0x61, 0x70)
+        val hot = intArrayOf(0xF5, 0x12, 0x1C)
+        // ease so most of the line stays cool and only the top end lights up
+        val e = c * c
+        return Color.rgb(
+            (cold[0] + (hot[0] - cold[0]) * e).roundToInt(),
+            (cold[1] + (hot[1] - cold[1]) * e).roundToInt(),
+            (cold[2] + (hot[2] - cold[2]) * e).roundToInt()
+        )
     }
 
     private fun percentile(sorted: List<Float>, p: Double): Float {
