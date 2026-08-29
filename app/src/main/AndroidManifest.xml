@@ -89,6 +89,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.admin.AnnouncementsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".SearchActivity"
             android:exported="false" />
 

@@ -69,6 +69,37 @@ data class RemoteUser(
     val carYear: Int? = null
 )
 
+// --- Announcements ---
+
+data class Announcement(
+    val id: String,
+    val title: String,
+    val body: String,
+    val kind: String = "info",              // info | event | update
+    val gate: String = "dismissible",       // dismissible | timer | blocking
+    val active: Boolean = true,
+    val minVersionCode: Int? = null,
+    val actionLabel: String? = null,
+    val actionUrl: String? = null,
+    val startsAt: String? = null,
+    val endsAt: String? = null,
+    val createdAt: String? = null
+)
+
+data class AnnouncementsResponse(val announcements: List<Announcement> = emptyList())
+
+data class AnnouncementRequest(
+    val title: String,
+    val body: String,
+    val kind: String,
+    val gate: String,
+    val active: Boolean,
+    val minVersionCode: Int?,
+    val actionLabel: String?,
+    val actionUrl: String?,
+    val endsAt: String?
+)
+
 /** POST /api/admin/leaderboard/purge-unknown */
 data class PurgeUnknownResponse(val rejected: Int = 0)
 

@@ -430,6 +430,37 @@ class SyncRepository private constructor(
 
     suspend fun getAdminUsers(): Result<List<AdminUser>> = adminCall { api.adminUsers() }
 
+    // --- Announcements ---
+
+    suspend fun fetchAnnouncements(versionCode: Int): List<com.revline.tracker.data.remote.Announcement> =
+        withContext(Dispatchers.IO) {
+            try {
+                api.getAnnouncements(versionCode).body()?.announcements ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+
+    suspend fun ackAnnouncement(id: String) = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext
+        try { api.ackAnnouncement(id) } catch (_: Exception) {}
+        Unit
+    }
+
+    suspend fun adminAnnouncements(): Result<List<com.revline.tracker.data.remote.Announcement>> =
+        adminCall { api.adminAnnouncements() }.map { it.announcements }
+
+    suspend fun createAnnouncement(
+        body: com.revline.tracker.data.remote.AnnouncementRequest
+    ): Result<com.revline.tracker.data.remote.Announcement> =
+        adminCall { api.adminCreateAnnouncement(body) }
+
+    suspend fun setAnnouncementActive(id: String, active: Boolean): Result<Unit> =
+        adminCall { api.adminUpdateAnnouncement(id, mapOf("active" to active)) }.map { }
+
+    suspend fun deleteAnnouncement(id: String): Result<Unit> =
+        adminCall { api.adminDeleteAnnouncement(id) }.map { }
+
     /** How many leaderboard trips currently have no car. */
     suspend fun unknownCarCount(): Result<Int> =
         adminCall { api.adminUnknownCars() }.map { it.count }

@@ -45,6 +45,7 @@
     <string name="stop_confirm_title">Stop this drive?</string>
     <string name="stop_and_save">Stop &amp; Save</string>
     <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
     <string name="elapsed_format">%1$02d:%2$02d</string>
     <string name="gforce_live">LAT %1$.2f G   ·   ACC/BRK %2$+.2f G</string>
 
@@ -163,6 +164,35 @@
     <!-- My Car -->
     <string name="account">Account</string>
     <string name="version_label">Revline %1$s (%2$d)</string>
+
+    <!-- Announcements -->
+    <string name="announce_got_it">Got it</string>
+    <string name="announce_update">Update</string>
+    <string name="announce_later">Not now</string>
+    <string name="announce_continue">Continue</string>
+    <string name="announce_continue_wait">Continue (%1$d)</string>
+
+    <!-- Admin: announcements -->
+    <string name="announcements_title">Announcements</string>
+    <string name="announcements_empty">No announcements yet.\nPost one and every user sees it on their next app open.</string>
+    <string name="announcement_new">New announcement</string>
+    <string name="announcement_post">Post</string>
+    <string name="announcement_delete_confirm">Delete this announcement? Users who haven\'t seen it won\'t.</string>
+    <string name="announcement_longpress_delete">LONG-PRESS TO DELETE</string>
+    <string name="announce_hint_title">Title</string>
+    <string name="announce_hint_body">Message</string>
+    <string name="announce_kind">Kind</string>
+    <string name="announce_kind_info">Info</string>
+    <string name="announce_kind_event">Event</string>
+    <string name="announce_kind_update">Update</string>
+    <string name="announce_gate">Dismiss behaviour</string>
+    <string name="announce_gate_dismissible">Normal</string>
+    <string name="announce_gate_timer">5s timer</string>
+    <string name="announce_gate_blocking">Blocking</string>
+    <string name="announce_hint_minversion">Min version code (update gate — optional)</string>
+    <string name="announce_hint_action_label">Button text (optional, e.g. Apply here)</string>
+    <string name="announce_hint_action_url">Button link (optional)</string>
+    <string name="admin_announcements">Announcements</string>
     <!-- Social -->
     <string name="follow">Follow</string>
     <string name="following">Following</string>

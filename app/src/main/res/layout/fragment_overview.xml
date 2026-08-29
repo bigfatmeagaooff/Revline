@@ -78,6 +78,14 @@
                 android:text="@string/admin_maintenance_section" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/announcementsButton"
+                style="@style/Widget.Revline.Button.Outline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/admin_announcements" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/cleanLeaderboardButton"
                 style="@style/Widget.Revline.Button.OutlineRed"
                 android:layout_width="match_parent"

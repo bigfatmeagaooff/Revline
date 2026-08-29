@@ -32,6 +32,9 @@ class OverviewFragment : Fragment() {
         sync = SyncRepository.getInstance(requireContext())
         binding.swipeRefresh.setOnRefreshListener { load() }
         binding.cleanLeaderboardButton.setOnClickListener { cleanLeaderboard() }
+        binding.announcementsButton.setOnClickListener {
+            startActivity(android.content.Intent(requireContext(), AnnouncementsActivity::class.java))
+        }
         load()
     }
 

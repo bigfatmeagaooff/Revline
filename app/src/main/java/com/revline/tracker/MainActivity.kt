@@ -90,6 +90,10 @@ class MainActivity : AppCompatActivity() {
         if (sync.isLoggedIn) {
             lifecycleScope.launch { sync.restoreTrips() }
         }
+
+        if (savedInstanceState == null) {
+            com.revline.tracker.util.Announcements.checkOnOpen(this)
+        }
     }
 
     override fun onResume() {

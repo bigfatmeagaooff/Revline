@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -26,6 +27,29 @@ interface RevlineApi {
 
     @PUT("api/users/me/car")
     suspend fun updateCar(@Body body: CarRequest): Response<CarResponse>
+
+    // --- Announcements ---
+
+    @GET("api/announcements")
+    suspend fun getAnnouncements(@Query("versionCode") versionCode: Int): Response<AnnouncementsResponse>
+
+    @POST("api/announcements/{id}/ack")
+    suspend fun ackAnnouncement(@Path("id") id: String): Response<OkResponse>
+
+    @GET("api/announcements/admin/all")
+    suspend fun adminAnnouncements(): Response<AnnouncementsResponse>
+
+    @POST("api/announcements/admin")
+    suspend fun adminCreateAnnouncement(@Body body: AnnouncementRequest): Response<Announcement>
+
+    @PATCH("api/announcements/admin/{id}")
+    suspend fun adminUpdateAnnouncement(
+        @Path("id") id: String,
+        @Body patch: Map<String, @JvmSuppressWildcards Any?>
+    ): Response<Announcement>
+
+    @DELETE("api/announcements/admin/{id}")
+    suspend fun adminDeleteAnnouncement(@Path("id") id: String): Response<OkResponse>
 
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>

@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.9.0]
+
+### Added
+
+- **Announcements.** An admin can post an app-wide message (Admin → Overview →
+  Announcements) that every user sees on their next app open — meet notices,
+  "apply for VIP parking" with a link button, general news. Each has a kind
+  (info / event / update) and a dismiss behaviour (normal / 5-second timer /
+  blocking).
+- **Update prompt.** An announcement with a minimum version code shows to anyone
+  on an older build, with an "update" link and a 5-second timer (or no way past,
+  for a hard requirement). It repeats until they update.
+  - Server: migration 008, `GET /api/announcements?versionCode=N`,
+    `POST /api/announcements/:id/ack`, admin CRUD under `/api/announcements/admin`.
+
+## [3.8.2]
+
+### Added
+
+- Profile → Account shows the running app version.
+
 ## [3.8.1]
 
 ### Added
