@@ -41,10 +41,9 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="4dp"
         android:layout_marginTop="14dp"
-        android:layerType="software"
-        android:background="@drawable/perf_line" />
+        android:background="@drawable/leader_dots" />
 
     <View
         android:layout_width="0dp"

@@ -39,7 +39,6 @@ object TripCardGenerator {
     private const val PRINT = 0xFFECEEF2.toInt()
     private const val DIM = 0xFF8A9099.toInt()
     private const val FAINT = 0xFF565C66.toInt()
-    private const val SLATE = 0xFF556170.toInt()
 
     private val STUB_FMT = SimpleDateFormat("EEE d MMM yyyy · h:mm a", Locale.getDefault())
 

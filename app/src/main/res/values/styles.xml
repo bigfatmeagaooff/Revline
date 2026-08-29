@@ -18,12 +18,13 @@
         <item name="android:includeFontPadding">false</item>
     </style>
 
-    <!-- The slip readout column — right-aligned values. JetBrains Mono. -->
+    <!-- The slip readout column — right-aligned values. JetBrains Mono Medium.
+         Use the weight-specific family directly: android:textFontWeight is API 28+
+         and minSdk is 26. -->
     <style name="Text.Readout" parent="">
-        <item name="android:fontFamily">@font/rl_mono</item>
-        <item name="fontFamily">@font/rl_mono</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_medium</item>
+        <item name="fontFamily">@font/jetbrains_mono_medium</item>
         <item name="android:textColor">@color/print</item>
-        <item name="android:textFontWeight">500</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
@@ -181,8 +182,7 @@
     <style name="DetailValue">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:fontFamily">@font/rl_mono</item>
-        <item name="android:textFontWeight">500</item>
+        <item name="android:fontFamily">@font/jetbrains_mono_medium</item>
         <item name="android:textSize">15sp</item>
         <item name="android:textColor">@color/print</item>
         <item name="android:gravity">end</item>
