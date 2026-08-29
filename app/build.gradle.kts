@@ -38,6 +38,20 @@ android {
         manifestPlaceholders["sentryEnv"] = if (sentryDsn.isBlank()) "development" else "production"
     }
 
+    signingConfigs {
+        // Stable debug key, committed to the repo so EVERY build — CI, any dev
+        // machine — signs identically. Without this, each machine (and every fresh
+        // CI runner) generates its own random debug key, so installed APKs can't be
+        // updated in place and have to be uninstalled first. This is NOT the Play
+        // Store release key; standard debug credentials, safe to commit.
+        getByName("debug") {
+            storeFile = file("revline-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // Debug APK is fine for v1 testing. See README for signed release steps.

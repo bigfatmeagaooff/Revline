@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Updates install in place now — no more uninstall/reinstall.** The build had no
+  signing config, so every machine (and every fresh CI runner) generated its own
+  random debug key; APKs signed with different keys can't update each other. A
+  shared debug keystore (`app/revline-debug.keystore`) is now committed and wired
+  into `signingConfigs`, so every build signs identically. *One last clean install
+  is needed to move onto the stable key; every update after that just works.*
+
 ### Changed
 
 - **Full UI redesign — "Time Slip".** Every drive is presented like a drag-strip

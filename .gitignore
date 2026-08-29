@@ -13,3 +13,6 @@ local.properties
 *.apk
 *.keystore
 *.jks
+# ...except the shared debug key, which MUST be committed so every build signs
+# the same way (see signingConfigs in app/build.gradle.kts).
+!/app/revline-debug.keystore
