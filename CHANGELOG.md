@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.8.1]
+
 ### Added
 
 - **Your car is now part of your account.** Registration asks for make + model
@@ -13,10 +15,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   taken server-side — so an "unknown car" can never reach the leaderboard.
   Existing accounts add theirs in Profile → My Car (it also syncs to the server
   now). Uploading a run with no car set prompts you to add one first.
+  - Server: migration `007_user_car`, `PUT /api/users/me/car`, `GET /api/users/me`,
+    upload returns `422 NO_CAR` when the account has none, leaderboard queries
+    exclude carless trips. Backfill pulls each user's car from their most recent
+    trip that had one.
 - **Admin: "Clean unknown cars off the leaderboard."** In the admin Overview tab —
-  finds every leaderboard run with no car and takes it off (marks it rejected;
-  an admin can restore individual runs). Backfill also pulls each user's car from
-  their most recent trip that had one.
+  finds every leaderboard run with no car and takes it off (`POST
+  /api/admin/leaderboard/purge-unknown`; marks them rejected, an admin can restore
+  individual runs).
 
 ### Fixed
 
@@ -25,7 +31,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   random debug key; APKs signed with different keys can't update each other. A
   shared debug keystore (`app/revline-debug.keystore`) is now committed and wired
   into `signingConfigs`, so every build signs identically. *One last clean install
-  is needed to move onto the stable key; every update after that just works.*
+  is needed to move off the v3.8.0 key; every update after that just works.*
+- `reset-password` now wraps its three writes (new password, mark code used, clear
+  sessions) in a transaction.
+
+## [3.8.0]
 
 ### Changed
 
@@ -40,7 +50,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     `font-family` resources (`rl_display`, `rl_mono`).
   - Route map knocked back to dark greyscale so it recedes; route line runs cold
     slate → redline by speed. G-force graph on the palette with a ±0.5 G grid.
-  - versionCode 18 → 19, versionName 3.7.0 → 3.8.0
+
+### Fixed
+
+- Bug-review pass: `textFontWeight` (API 28+) replaced with weight-specific font
+  families for minSdk 26; the tracking screen's dashed rule swapped for a tiled
+  drawable that renders on a hardware canvas.
+
+## [3.7.0]
 
 ### Added
 
