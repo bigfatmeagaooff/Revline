@@ -41,6 +41,10 @@ class ProfileActivity : AppCompatActivity() {
         binding.modelInput.setText((sync.carModel ?: local.model).orEmpty())
         binding.yearInput.setText(((sync.carYear ?: local.year)?.toString()).orEmpty())
 
+        binding.versionLabel.text = getString(
+            R.string.version_label, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE
+        )
+
         binding.saveCarButton.setOnClickListener { saveCar() }
         binding.loginButton.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
         binding.registerButton.setOnClickListener { startActivity(Intent(this, RegisterActivity::class.java)) }

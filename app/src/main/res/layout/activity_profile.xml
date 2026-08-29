@@ -299,9 +299,18 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"
             android:text="@string/admin_panel"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/versionLabel"
+            style="@style/Text.Stub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            tools:text="REVLINE 3.8.2 (21)" />
 
     </LinearLayout>
 
