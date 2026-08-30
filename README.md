@@ -255,6 +255,31 @@ You'll need an Android SDK installed and either `ANDROID_HOME` set or a
    # → app/build/outputs/apk/release/app-release.apk
    ```
 
+## Push notifications (Phase 3)
+
+Push is **optional and off by default**. The app compiles and runs without any
+Firebase config — follows/likes/comments and announcements just appear the next time
+the app is opened (poll-on-open). Turning on real push (phone lights up while the app
+is closed) needs a one-time Firebase setup:
+
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
+2. Add an **Android app**, package name `com.revline.tracker`. (No SHA-1 needed for
+   FCM.)
+3. Download the generated **`google-services.json`** and drop it at
+   `app/google-services.json`. Commit it — it's not a secret (it ships inside every
+   APK; the API key in it is restricted to this package). The Gradle build detects
+   the file and switches push on automatically (`BuildConfig.PUSH_CONFIGURED`).
+4. Set up the **server** side too — see the server repo's README, "Push
+   notifications" (it needs a service-account key).
+
+Without step 3, CI and local builds still succeed; `google-services.json` absent ⇒
+Firebase never initialises ⇒ `Push.*` and the FCM service are inert.
+
+Implementation: `util/Push.kt` (token lifecycle), `util/PushNotifications.kt`
+(channels + rendering an incoming message), `service/RevlineMessagingService.kt`
+(FCM entry point). Tokens are registered on login / app start and unregistered on
+logout.
+
 ---
 
 ## Explicitly out of scope (v1)

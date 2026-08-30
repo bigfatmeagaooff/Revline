@@ -3,4 +3,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.ksp) apply false
+    // On the classpath but not applied here — app/build.gradle.kts applies it only
+    // when app/google-services.json is present, so CI builds without Firebase config
+    // still succeed (push is simply disabled at runtime).
+    alias(libs.plugins.google.services) apply false
 }

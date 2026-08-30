@@ -15,9 +15,11 @@ import com.revline.tracker.data.remote.RevlineApi
 import com.revline.tracker.data.remote.TokenStore
 import com.revline.tracker.data.remote.UploadTripRequest
 import com.revline.tracker.data.remote.VerdictRequest
+import com.revline.tracker.data.remote.DeviceTokenRequest
 import com.revline.tracker.util.CarProfile
 import com.revline.tracker.util.DeviceId
 import com.revline.tracker.util.GForceCalculator
+import com.revline.tracker.util.Push
 import com.revline.tracker.util.SpeedCalculator
 import com.revline.tracker.util.TripStatsCalculator
 import kotlinx.coroutines.Dispatchers
@@ -133,6 +135,9 @@ class SyncRepository private constructor(
                 if (!body.user.carMake.isNullOrBlank()) {
                     CarProfile.save(appContext, body.user.carMake, body.user.carModel, body.user.carYear)
                 }
+                // Register this device for push now that we're signed in (no-op if
+                // push isn't configured in this build).
+                Push.syncToken(appContext)
                 AuthOutcome.Success
             } else {
                 AuthOutcome.Error(errorMessage(resp))
@@ -164,6 +169,11 @@ class SyncRepository private constructor(
         adminCall { api.adminIssueResetCode(userId) }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
+        // Stop server pushes to this device before the auth token is gone.
+        try {
+            Push.unregisterCurrent(appContext)
+        } catch (_: Exception) {
+        }
         try {
             api.logout()
         } catch (_: Exception) {
@@ -484,6 +494,21 @@ class SyncRepository private constructor(
 
     suspend fun markNotificationsRead() = withContext(Dispatchers.IO) {
         try { api.markNotificationsRead() } catch (_: Exception) {}
+        Unit
+    }
+
+    // --- Push device tokens (Phase 3) ---
+
+    /** Register an FCM token for the signed-in account. Best-effort. */
+    suspend fun registerDevice(token: String) = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext
+        try { api.registerDevice(DeviceTokenRequest(token)) } catch (_: Exception) {}
+        Unit
+    }
+
+    /** Forget an FCM token server-side (called on logout, while still authenticated). */
+    suspend fun unregisterDevice(token: String) = withContext(Dispatchers.IO) {
+        try { api.unregisterDevice(DeviceTokenRequest(token)) } catch (_: Exception) {}
         Unit
     }
 

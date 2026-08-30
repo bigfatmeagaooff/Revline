@@ -62,6 +62,14 @@ interface RevlineApi {
     @POST("api/notifications/read")
     suspend fun markNotificationsRead(): Response<OkResponse>
 
+    // --- Push (Phase 3) ---
+
+    @POST("api/devices/register")
+    suspend fun registerDevice(@Body body: DeviceTokenRequest): Response<OkResponse>
+
+    @POST("api/devices/unregister")
+    suspend fun unregisterDevice(@Body body: DeviceTokenRequest): Response<OkResponse>
+
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>
 

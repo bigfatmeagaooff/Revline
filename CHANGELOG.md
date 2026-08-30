@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.10.0]
+
+### Added
+
+- **Real push notifications.** Follows, likes and comments now reach your phone
+  even when Revline is closed, and a new announcement goes out to everyone
+  immediately instead of waiting for their next app open. Two notification
+  channels (Social / Announcements) so each can be tuned or muted separately.
+  - Server: migration 010 (`device_tokens`), `POST /api/devices/register` +
+    `/unregister`, `src/services/push.js` (Firebase Admin). A push is sent
+    alongside every notification row and on every new announcement; stale tokens
+    are pruned automatically.
+  - Requires a one-time Firebase setup — a project with an Android app
+    (`com.revline.tracker`), `app/google-services.json` in the app repo, and
+    `FIREBASE_SERVICE_ACCOUNT` on the server. Without it the build still works and
+    push is simply off (notifications appear on next open, as before).
+
 ## [3.9.0]
 
 ### Added

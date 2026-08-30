@@ -4,6 +4,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Push notifications (Phase 3). The Firebase Gradle plugin refuses to run without
+// google-services.json, so it's applied only when that file has been added. A build
+// without it still compiles — Firebase just never initialises and push stays off.
+// Drop the file from the Firebase console (Android app, package com.revline.tracker)
+// at app/google-services.json to enable it. See README → "Push notifications".
+val hasFirebaseConfig = file("google-services.json").exists()
+if (hasFirebaseConfig) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.revline.tracker"
     compileSdk = 35
@@ -12,8 +22,8 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 22
-        versionName = "3.9.0"
+        versionCode = 23
+        versionName = "3.10.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -36,6 +46,10 @@ android {
             ?: "https://618c73f3b64c0a354b1e607e9b9e75e7@o4511989209497600.ingest.de.sentry.io/4511989261533264"
         manifestPlaceholders["sentryDsn"] = sentryDsn
         manifestPlaceholders["sentryEnv"] = if (sentryDsn.isBlank()) "development" else "production"
+
+        // True when this build was compiled with google-services.json present. The
+        // runtime checks it before trying to register for push (Phase 3).
+        buildConfigField("boolean", "PUSH_CONFIGURED", hasFirebaseConfig.toString())
     }
 
     signingConfigs {
@@ -120,4 +134,9 @@ dependencies {
 
     // Crash / error reporting (auto-captures uncaught exceptions + ANRs via manifest init)
     implementation(libs.sentry.android)
+
+    // Push notifications (Phase 3). Compiles without google-services.json; Firebase
+    // only initialises at runtime when that file was present at build time.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }

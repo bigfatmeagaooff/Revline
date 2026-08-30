@@ -46,6 +46,15 @@
         <meta-data android:name="io.sentry.anr.enable" android:value="true" />
         <meta-data android:name="io.sentry.traces.sample-rate" android:value="0.0" />
 
+        <!-- Push (Phase 3). Channel/icon used when FCM shows a notification-payload
+             message itself (app in background). Inert without google-services.json. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="revline_social" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_bell" />
+
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -137,6 +146,15 @@
             android:name=".service.TrackingService"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- Push (Phase 3). The OS only binds this when Firebase is configured. -->
+        <service
+            android:name=".service.RevlineMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 

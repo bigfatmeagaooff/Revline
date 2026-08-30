@@ -110,6 +110,13 @@ data class NotificationsResponse(
 
 data class UnreadCountResponse(val unreadCount: Int = 0)
 
+// --- Push (Phase 3) ---
+
+data class DeviceTokenRequest(
+    val token: String,
+    val platform: String = "android"
+)
+
 data class AnnouncementRequest(
     val title: String,
     val body: String,

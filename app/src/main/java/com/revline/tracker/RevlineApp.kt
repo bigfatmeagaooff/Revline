@@ -3,6 +3,8 @@ package com.revline.tracker
 import android.app.Application
 import com.revline.tracker.service.AutoDetectManager
 import com.revline.tracker.util.AppSettings
+import com.revline.tracker.util.Push
+import com.revline.tracker.util.PushNotifications
 import org.osmdroid.config.Configuration
 import java.io.File
 
@@ -34,5 +36,10 @@ class RevlineApp : Application() {
         if (AppSettings.isAutoDetectEnabled(this) && AutoDetectManager.hasPermissions(this)) {
             AutoDetectManager.start(this)
         }
+
+        // Push notification channels + refresh this device's FCM token with the
+        // server. Both no-op if push isn't configured in this build.
+        PushNotifications.ensureChannels(this)
+        Push.syncToken(this)
     }
 }
