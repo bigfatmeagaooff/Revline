@@ -10,6 +10,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Notification centre.** A bell in the top bar with an unread badge → follows,
+  likes and comments on your runs. Tap a row to jump to the person or the run;
+  opening the list marks everything read.
+  - Server: migration 009, notification rows written on follow / like / comment
+    (best-effort, never self-notify); `GET /api/notifications`,
+    `GET /api/notifications/unread-count`, `POST /api/notifications/read`.
 - **Announcements.** An admin can post an app-wide message (Admin → Overview →
   Announcements) that every user sees on their next app open — meet notices,
   "apply for VIP parking" with a link button, general news. Each has a kind

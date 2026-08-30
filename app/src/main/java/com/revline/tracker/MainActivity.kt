@@ -80,6 +80,9 @@ class MainActivity : AppCompatActivity() {
         binding.leaderboardButton.setOnClickListener {
             startActivity(Intent(this, LeaderboardActivity::class.java))
         }
+        binding.notificationsButton.setOnClickListener {
+            startActivity(Intent(this, com.revline.tracker.ui.NotificationsActivity::class.java))
+        }
 
         // Clean up any leftover in-progress rows from a killed service.
         lifecycleScope.launch { repository.deleteGhostTrips() }
@@ -98,7 +101,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch { SyncRepository.getInstance(this@MainActivity).sendHeartbeat() }
+        val sync = SyncRepository.getInstance(this@MainActivity)
+        lifecycleScope.launch { sync.sendHeartbeat() }
+        lifecycleScope.launch {
+            val n = sync.unreadNotificationCount()
+            binding.notificationsBadge.visibility = if (n > 0) View.VISIBLE else View.GONE
+            binding.notificationsBadge.text = if (n > 99) "99+" else n.toString()
+        }
     }
 
     private fun observeTrips() {

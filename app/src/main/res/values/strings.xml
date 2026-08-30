@@ -193,6 +193,14 @@
     <string name="announce_hint_action_label">Button text (optional, e.g. Apply here)</string>
     <string name="announce_hint_action_url">Button link (optional)</string>
     <string name="admin_announcements">Announcements</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_empty">Nothing yet.\nFollows, likes and comments on your runs show up here.</string>
+    <string name="notif_someone">Someone</string>
+    <string name="notif_follow">%1$s started following you</string>
+    <string name="notif_like">%1$s liked your run</string>
+    <string name="notif_comment">%1$s commented: %2$s</string>
     <!-- Social -->
     <string name="follow">Follow</string>
     <string name="following">Following</string>

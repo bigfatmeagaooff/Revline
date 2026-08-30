@@ -88,6 +88,28 @@ data class Announcement(
 
 data class AnnouncementsResponse(val announcements: List<Announcement> = emptyList())
 
+// --- Notifications ---
+
+data class Notification(
+    val id: String,
+    val type: String,                       // follow | like | comment
+    val tripId: String? = null,
+    val preview: String? = null,
+    val createdAt: String? = null,
+    val read: Boolean = false,
+    val actorId: String? = null,
+    val actorUsername: String? = null,
+    val actorAvatarUrl: String? = null
+)
+
+data class NotificationsResponse(
+    val unreadCount: Int = 0,
+    val nextCursor: String? = null,
+    val notifications: List<Notification> = emptyList()
+)
+
+data class UnreadCountResponse(val unreadCount: Int = 0)
+
 data class AnnouncementRequest(
     val title: String,
     val body: String,

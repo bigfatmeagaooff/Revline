@@ -93,6 +93,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.NotificationsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".SearchActivity"
             android:exported="false" />
 

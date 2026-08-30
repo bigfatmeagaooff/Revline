@@ -461,6 +461,32 @@ class SyncRepository private constructor(
     suspend fun deleteAnnouncement(id: String): Result<Unit> =
         adminCall { api.adminDeleteAnnouncement(id) }.map { }
 
+    // --- Notifications ---
+
+    suspend fun unreadNotificationCount(): Int = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext 0
+        try {
+            api.getUnreadCount().body()?.unreadCount ?: 0
+        } catch (e: Exception) {
+            0
+        }
+    }
+
+    suspend fun fetchNotifications(cursor: String? = null): com.revline.tracker.data.remote.NotificationsResponse =
+        withContext(Dispatchers.IO) {
+            try {
+                api.getNotifications(cursor).body()
+                    ?: com.revline.tracker.data.remote.NotificationsResponse()
+            } catch (e: Exception) {
+                com.revline.tracker.data.remote.NotificationsResponse()
+            }
+        }
+
+    suspend fun markNotificationsRead() = withContext(Dispatchers.IO) {
+        try { api.markNotificationsRead() } catch (_: Exception) {}
+        Unit
+    }
+
     /** How many leaderboard trips currently have no car. */
     suspend fun unknownCarCount(): Result<Int> =
         adminCall { api.adminUnknownCars() }.map { it.count }

@@ -17,9 +17,40 @@
         android:layout_marginTop="16dp"
         android:text="@string/app_name"
         android:textSize="28sp"
-        app:layout_constraintEnd_toStartOf="@id/leaderboardButton"
+        app:layout_constraintEnd_toStartOf="@id/notificationsButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/notificationsButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/notifications_title"
+        android:src="@drawable/ic_bell"
+        app:tint="@color/text_secondary"
+        app:layout_constraintBottom_toBottomOf="@id/wordmark"
+        app:layout_constraintEnd_toStartOf="@id/leaderboardButton"
+        app:layout_constraintTop_toTopOf="@id/wordmark" />
+
+    <TextView
+        android:id="@+id/notificationsBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="18dp"
+        android:minHeight="18dp"
+        android:background="@drawable/bg_badge"
+        android:fontFamily="@font/inter_medium"
+        android:gravity="center"
+        android:paddingHorizontal="4dp"
+        android:textColor="@color/print"
+        android:textSize="10sp"
+        android:visibility="gone"
+        app:layout_constraintCircle="@id/notificationsButton"
+        app:layout_constraintCircleAngle="45"
+        app:layout_constraintCircleRadius="14dp"
+        tools:text="3"
+        tools:visibility="visible" />
 
     <ImageButton
         android:id="@+id/leaderboardButton"

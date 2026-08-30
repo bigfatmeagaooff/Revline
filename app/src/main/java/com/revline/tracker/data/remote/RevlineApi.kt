@@ -51,6 +51,17 @@ interface RevlineApi {
     @DELETE("api/announcements/admin/{id}")
     suspend fun adminDeleteAnnouncement(@Path("id") id: String): Response<OkResponse>
 
+    // --- Notifications ---
+
+    @GET("api/notifications")
+    suspend fun getNotifications(@Query("cursor") cursor: String?): Response<NotificationsResponse>
+
+    @GET("api/notifications/unread-count")
+    suspend fun getUnreadCount(): Response<UnreadCountResponse>
+
+    @POST("api/notifications/read")
+    suspend fun markNotificationsRead(): Response<OkResponse>
+
     @POST("api/trips/upload")
     suspend fun uploadTrip(@Body body: UploadTripRequest): Response<UploadTripResponse>
 

@@ -30,4 +30,17 @@ object RelativeTime {
         val instant = parse(iso) ?: return "—"
         return dateFormatter.format(instant.atZone(ZoneId.systemDefault()))
     }
+
+    /** Compact "now" / "5m" / "2h" / "3d" / "22 Jun", for notification rows. */
+    fun compact(iso: String?): String {
+        val instant = parse(iso) ?: return ""
+        val minutes = (Instant.now().toEpochMilli() - instant.toEpochMilli()) / 60_000L
+        return when {
+            minutes < 1 -> "now"
+            minutes < 60 -> "${minutes}m"
+            minutes < 60 * 24 -> "${minutes / 60}h"
+            minutes < 60 * 24 * 7 -> "${minutes / (60 * 24)}d"
+            else -> dateFormatter.format(instant.atZone(ZoneId.systemDefault())).substringBeforeLast(' ')
+        }
+    }
 }
