@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.10.1]
+
+### Fixed
+
+- **App crash on launch during a drive (`FOREIGN KEY constraint failed`).** The
+  launch-time "ghost trip" cleanup (`DELETE FROM trips WHERE endTime IS NULL`) could
+  delete the drive that was *currently recording* — its row has no end time until the
+  drive finishes — most easily by tapping the tracking notification, which opens the
+  main screen. The tracking service's next GPS/G-force write then hit a broken foreign
+  key and crashed the app, repeatedly. Now the active trip is always excluded from
+  cleanup, and point writes can no longer crash the app if their trip disappears.
+  This also means **an in-progress drive is no longer silently deleted** when you open
+  the app mid-drive.
+
 ## [3.10.0]
 
 ### Added

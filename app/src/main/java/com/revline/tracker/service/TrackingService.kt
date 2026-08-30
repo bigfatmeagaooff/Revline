@@ -93,7 +93,7 @@ class TrackingService : LifecycleService() {
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             val tripId = activeTripId
-            if (tripId == 0L) return
+            if (tripId == 0L || stopping) return
             for (location in result.locations) {
                 if (location.hasSpeed()) {
                     val kmh = location.speed * 3.6f
@@ -111,7 +111,12 @@ class TrackingService : LifecycleService() {
                     timestamp = System.currentTimeMillis()
                 )
                 // Persist immediately; survives the process being killed mid-trip.
-                lifecycleScope.launch { repository.addTrackPoint(point) }
+                // Never let a lost write (e.g. the trip row was cleaned up while a
+                // straggler callback was in flight) take down the app.
+                lifecycleScope.launch {
+                    runCatching { repository.addTrackPoint(point) }
+                        .onFailure { Log.w(TAG, "dropped track point for trip $tripId: ${it.message}") }
+                }
             }
         }
     }
@@ -160,7 +165,11 @@ class TrackingService : LifecycleService() {
                     timestamp = now
                 )
                 // Persist immediately (throttled), not buffered only in memory.
-                lifecycleScope.launch { repository.addGForcePoint(point) }
+                // Guarded so a lost write can't crash the app (see addTrackPoint above).
+                lifecycleScope.launch {
+                    runCatching { repository.addGForcePoint(point) }
+                        .onFailure { Log.w(TAG, "dropped G point for trip $tripId: ${it.message}") }
+                }
             }
         }
 

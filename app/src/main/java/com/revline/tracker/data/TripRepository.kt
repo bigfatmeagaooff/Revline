@@ -22,7 +22,8 @@ class TripRepository(
     /** Finished trips with real stats only (no ghost/0-stat rows). */
     fun observeVisibleTrips(): Flow<List<Trip>> = tripDao.observeVisible()
 
-    suspend fun deleteGhostTrips(): Int = tripDao.deleteGhostTrips()
+    /** @param exceptTripId the in-progress trip to spare (see [TripDao.deleteGhostTrips]); -1 = none. */
+    suspend fun deleteGhostTrips(exceptTripId: Long = -1L): Int = tripDao.deleteGhostTrips(exceptTripId)
 
     suspend fun getTrip(tripId: Long): Trip? = tripDao.getById(tripId)
 

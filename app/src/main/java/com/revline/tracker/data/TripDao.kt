@@ -29,9 +29,15 @@ interface TripDao {
     )
     fun observeVisible(): Flow<List<Trip>>
 
-    /** Removes leftover in-progress rows (e.g. a drive whose service was killed). */
-    @Query("DELETE FROM trips WHERE endTime IS NULL")
-    suspend fun deleteGhostTrips(): Int
+    /**
+     * Removes leftover in-progress rows (e.g. a drive whose service was killed).
+     * [exceptId] is the currently-tracking trip, which must never be deleted — it's
+     * a ghost by definition (no endTime until the drive finishes), and deleting it
+     * out from under the running service loses the drive and makes the next
+     * track/G-force insert fail its foreign key.
+     */
+    @Query("DELETE FROM trips WHERE endTime IS NULL AND id != :exceptId")
+    suspend fun deleteGhostTrips(exceptId: Long): Int
 
     @Query("SELECT * FROM trips WHERE id = :tripId")
     suspend fun getById(tripId: Long): Trip?

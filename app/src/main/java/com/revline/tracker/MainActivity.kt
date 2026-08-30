@@ -84,8 +84,14 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, com.revline.tracker.ui.NotificationsActivity::class.java))
         }
 
-        // Clean up any leftover in-progress rows from a killed service.
-        lifecycleScope.launch { repository.deleteGhostTrips() }
+        // Clean up any leftover in-progress rows from a killed service — but never the
+        // drive that's running right now. Its row has no endTime for the whole drive,
+        // so it looks like a ghost; deleting it here (e.g. when the tracking
+        // notification opens this screen mid-drive) loses the drive and crashes the
+        // service's next point write on a broken foreign key.
+        lifecycleScope.launch {
+            repository.deleteGhostTrips(TrackingService.state.value.activeTripId ?: -1L)
+        }
 
         observeTrips()
 
