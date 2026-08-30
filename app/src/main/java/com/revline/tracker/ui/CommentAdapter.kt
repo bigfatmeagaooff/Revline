@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.revline.tracker.data.remote.Comment
 import com.revline.tracker.databinding.ItemCommentBinding
+import com.revline.tracker.util.Avatars
 import java.time.Instant
 import java.util.Locale
 
@@ -24,7 +25,7 @@ class CommentAdapter(
 
     inner class VH(private val binding: ItemCommentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(c: Comment) {
-            binding.avatar.text = c.username.firstOrNull()?.uppercase(Locale.getDefault()) ?: "?"
+            Avatars.bind(binding.avatar, binding.avatarImage, c.avatarUrl, c.username)
             binding.username.text = c.username
             binding.body.text = c.body
             binding.timestamp.text = relativeTime(c.createdAt)

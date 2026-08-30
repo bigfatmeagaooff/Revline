@@ -28,6 +28,12 @@ interface RevlineApi {
     @PUT("api/users/me/car")
     suspend fun updateCar(@Body body: CarRequest): Response<CarResponse>
 
+    @POST("api/users/me/avatar")
+    suspend fun uploadAvatar(@Body body: AvatarUploadRequest): Response<AvatarResponse>
+
+    @DELETE("api/users/me/avatar")
+    suspend fun deleteAvatar(): Response<OkResponse>
+
     // --- Announcements ---
 
     @GET("api/announcements")

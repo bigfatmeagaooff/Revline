@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.revline.tracker.R
 import com.revline.tracker.data.remote.UserSummary
+import com.revline.tracker.util.Avatars
 import com.revline.tracker.databinding.ItemUserBinding
 import java.util.Locale
 
@@ -30,7 +31,7 @@ class UserAdapter(
     inner class VH(private val binding: ItemUserBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: UserSummary) {
             val ctx = binding.root.context
-            binding.avatar.text = user.username.firstOrNull()?.uppercase(Locale.getDefault()) ?: "?"
+            Avatars.bind(binding.avatar, binding.avatarImage, user.avatarUrl, user.username)
             binding.username.text = user.username
             binding.followerMeta.text =
                 ctx.resources.getQuantityString(R.plurals.followers_count, user.followerCount, user.followerCount)

@@ -22,8 +22,8 @@ android {
         applicationId = "com.revline.tracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 24
-        versionName = "3.10.1"
+        versionCode = 25
+        versionName = "3.11.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -139,4 +139,7 @@ dependencies {
     // only initialises at runtime when that file was present at build time.
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+
+    // Profile pictures — image loading with disk/memory cache
+    implementation(libs.coil)
 }

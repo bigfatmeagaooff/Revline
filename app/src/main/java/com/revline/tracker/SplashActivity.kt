@@ -8,6 +8,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.databinding.ActivitySplashBinding
+import com.revline.tracker.ui.OnboardingActivity
 
 /**
  * Branded cold-start splash: the red line sweeps out, holds ~1.5s, then routes to
@@ -32,8 +33,11 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun proceed() {
-        val loggedIn = SyncRepository.getInstance(this).isLoggedIn
-        val next = if (loggedIn) MainActivity::class.java else LoginActivity::class.java
+        val next = when {
+            OnboardingActivity.shouldShow(this) -> OnboardingActivity::class.java
+            SyncRepository.getInstance(this).isLoggedIn -> MainActivity::class.java
+            else -> LoginActivity::class.java
+        }
         startActivity(Intent(this, next))
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         finish()

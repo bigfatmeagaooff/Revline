@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp">
+
+    <ImageView
+        android:id="@+id/pageIcon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:importantForAccessibility="no"
+        app:tint="@color/redline"
+        tools:src="@drawable/ic_directions_car" />
+
+    <TextView
+        android:id="@+id/pageTitle"
+        style="@style/Text.Display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:gravity="center"
+        android:textColor="@color/print"
+        android:textSize="30sp"
+        tools:text="Record every drive" />
+
+    <TextView
+        android:id="@+id/pageBody"
+        style="@style/Text.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:textColor="@color/print_dim"
+        android:textSize="15sp"
+        tools:text="Tap Start Drive and mount your phone. Revline logs your route, speed and G-force the whole way." />
+
+</LinearLayout>

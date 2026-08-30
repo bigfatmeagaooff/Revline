@@ -2,21 +2,28 @@ package com.revline.tracker
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.service.AutoDetectManager
 import com.revline.tracker.util.AppSettings
+import com.revline.tracker.util.Avatars
 import com.revline.tracker.databinding.ActivityProfileBinding
 import com.revline.tracker.databinding.CellStatBinding
 import com.revline.tracker.ui.AdminDashboardActivity
+import com.revline.tracker.ui.HowItWorksActivity
 import com.revline.tracker.util.CarProfile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import kotlin.math.roundToInt
 import com.revline.tracker.util.EdgeToEdge
@@ -27,6 +34,10 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private lateinit var sync: SyncRepository
 
+    private val pickPhoto = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri -> if (uri != null) uploadAvatar(uri) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
@@ -35,6 +46,8 @@ class ProfileActivity : AppCompatActivity() {
         sync = SyncRepository.getInstance(this)
 
         binding.backButton.setOnClickListener { finish() }
+        binding.avatarFrame.setOnClickListener { if (sync.isLoggedIn) choosePhotoAction() }
+        binding.changePhoto.setOnClickListener { choosePhotoAction() }
 
         // The account car (when signed in) is the source of truth; fall back to the
         // local profile for signed-out users.
@@ -51,6 +64,7 @@ class ProfileActivity : AppCompatActivity() {
         binding.loginButton.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
         binding.registerButton.setOnClickListener { startActivity(Intent(this, RegisterActivity::class.java)) }
         binding.adminButton.setOnClickListener { startActivity(Intent(this, AdminDashboardActivity::class.java)) }
+        binding.howItWorksButton.setOnClickListener { startActivity(Intent(this, HowItWorksActivity::class.java)) }
         binding.findPeople.setOnClickListener { startActivity(Intent(this, SearchActivity::class.java)) }
         binding.logoutButton.setOnClickListener {
             lifecycleScope.launch {
@@ -77,7 +91,8 @@ class ProfileActivity : AppCompatActivity() {
         val loggedIn = sync.isLoggedIn
         if (loggedIn) {
             val name = sync.username.orEmpty()
-            binding.avatar.text = name.firstOrNull()?.uppercase(Locale.getDefault()) ?: "?"
+            Avatars.bind(binding.avatar, binding.avatarImage, sync.avatarUrl, name)
+            binding.changePhoto.visibility = View.VISIBLE
             binding.username.text = name
             binding.userEmail.text = sync.userEmail.orEmpty()
             binding.userEmail.visibility = View.VISIBLE
@@ -89,7 +104,8 @@ class ProfileActivity : AppCompatActivity() {
             loadStats()
             loadFollowCounts()
         } else {
-            binding.avatar.text = "?"
+            Avatars.bind(binding.avatar, binding.avatarImage, null, null)
+            binding.changePhoto.visibility = View.GONE
             binding.username.text = getString(R.string.not_signed_in)
             binding.userEmail.visibility = View.GONE
             binding.statsRow.visibility = View.GONE
@@ -98,6 +114,65 @@ class ProfileActivity : AppCompatActivity() {
             binding.loggedOutButtons.visibility = View.VISIBLE
             binding.logoutButton.visibility = View.GONE
             binding.adminButton.visibility = View.GONE
+        }
+    }
+
+    // --- Profile picture ---
+
+    private fun choosePhotoAction() {
+        if (!sync.isLoggedIn) return
+        if (sync.avatarUrl == null) {
+            pickPhoto.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.profile_photo)
+            .setItems(
+                arrayOf(getString(R.string.photo_choose_new), getString(R.string.photo_remove))
+            ) { _, which ->
+                if (which == 0) {
+                    pickPhoto.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                } else {
+                    removeAvatar()
+                }
+            }
+            .show()
+    }
+
+    private fun uploadAvatar(uri: Uri) {
+        binding.changePhoto.isEnabled = false
+        binding.changePhoto.text = getString(R.string.photo_uploading)
+        lifecycleScope.launch {
+            val encoded = withContext(Dispatchers.IO) { Avatars.encodeForUpload(this@ProfileActivity, uri) }
+            val result = if (encoded == null) {
+                Result.failure(Exception(getString(R.string.photo_read_failed)))
+            } else {
+                sync.uploadAvatar(encoded)
+            }
+            binding.changePhoto.isEnabled = true
+            binding.changePhoto.text = getString(R.string.change_photo)
+            result.onSuccess { refreshAccount() }
+                .onFailure {
+                    Toast.makeText(
+                        this@ProfileActivity,
+                        it.message ?: getString(R.string.photo_upload_failed),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+        }
+    }
+
+    private fun removeAvatar() {
+        lifecycleScope.launch {
+            sync.removeAvatar()
+                .onSuccess { refreshAccount() }
+                .onFailure {
+                    Toast.makeText(this@ProfileActivity, it.message, Toast.LENGTH_LONG).show()
+                }
         }
     }
 

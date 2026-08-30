@@ -12,6 +12,7 @@ import com.revline.tracker.data.SyncRepository
 import com.revline.tracker.data.remote.PublicProfile
 import com.revline.tracker.data.remote.RemoteTripSummary
 import com.revline.tracker.databinding.ActivityUserProfileBinding
+import com.revline.tracker.util.Avatars
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -57,7 +58,7 @@ class UserProfileActivity : AppCompatActivity() {
     }
 
     private fun bind(p: PublicProfile) {
-        binding.avatar.text = p.username.firstOrNull()?.uppercase(Locale.getDefault()) ?: "?"
+        Avatars.bind(binding.avatar, binding.avatarImage, p.avatarUrl, p.username)
         binding.username.text = p.username
         setStat(binding.cellDrives.statNumber, p.tripCount.toString())
         setStat(binding.cellFollowers.statNumber, p.followerCount.toString())

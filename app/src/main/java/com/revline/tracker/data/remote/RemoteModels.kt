@@ -66,8 +66,14 @@ data class RemoteUser(
     val isAdmin: Boolean = false,
     val carMake: String? = null,
     val carModel: String? = null,
-    val carYear: Int? = null
+    val carYear: Int? = null,
+    val avatarUrl: String? = null
 )
+
+// --- Profile picture ---
+
+data class AvatarUploadRequest(val image: String)   // base64 JPEG
+data class AvatarResponse(val avatarUrl: String? = null)
 
 // --- Announcements ---
 

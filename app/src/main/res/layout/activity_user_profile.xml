@@ -29,16 +29,31 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <TextView
-                android:id="@+id/avatar"
-                style="@style/Text.Display"
+            <FrameLayout
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 android:background="@drawable/bg_avatar"
-                android:gravity="center"
-                android:textColor="@color/text_primary"
-                android:textSize="28sp"
-                tools:text="T" />
+                android:foreground="@drawable/avatar_frame">
+
+                <TextView
+                    android:id="@+id/avatar"
+                    style="@style/Text.Display"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/text_primary"
+                    android:textSize="28sp"
+                    tools:text="T" />
+
+                <ImageView
+                    android:id="@+id/avatarImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/profile_photo"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/username"

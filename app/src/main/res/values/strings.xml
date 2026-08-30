@@ -134,6 +134,16 @@
     <string name="logged_out">Signed out</string>
     <string name="signed_in_as">Signed in as %1$s</string>
     <string name="not_signed_in">Not signed in</string>
+
+    <!-- Profile picture -->
+    <string name="profile_photo">Profile photo</string>
+    <string name="change_photo">Change photo</string>
+    <string name="photo_choose_new">Choose a new photo</string>
+    <string name="photo_remove">Remove photo</string>
+    <string name="photo_uploading">Uploading…</string>
+    <string name="photo_read_failed">Couldn\'t read that image</string>
+    <string name="photo_upload_failed">Upload failed</string>
+
     <string name="error_fill_all_fields">Please fill in all fields</string>
     <string name="error_password_length">Password must be at least 8 characters</string>
 
@@ -206,6 +216,38 @@
     <string name="push_channel_social_desc">Follows, likes and comments on your runs</string>
     <string name="push_channel_announcements">Announcements</string>
     <string name="push_channel_announcements_desc">News and updates from Revline</string>
+
+    <!-- Onboarding (first-run walkthrough) -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_start">Get started</string>
+    <string name="onb1_title">Record every drive</string>
+    <string name="onb1_body">Tap Start Drive and mount your phone somewhere fixed. Revline logs your route, speed and G-force the whole way — and saves as it goes, so nothing is lost if the app closes.</string>
+    <string name="onb2_title">Every drive is a timing slip</string>
+    <string name="onb2_body">When you stop, you get a printout: trap speed, distance, 0–100, cornering G, a speed-coloured route map, and a card you can share anywhere.</string>
+    <string name="onb3_title">Climb the leaderboard</string>
+    <string name="onb3_body">Make an account and add your car. Then race the boards: fastest top speed, quickest 0–100, and the longest pull above 100 km/h.</string>
+    <string name="onb4_title">Follow the scene</string>
+    <string name="onb4_body">Follow other drivers, like and comment on their runs, and get a nudge when someone follows you back.</string>
+
+    <!-- How it works (reference page in Profile) -->
+    <string name="how_it_works_button">How Revline works</string>
+    <string name="how_it_works_title">How Revline works</string>
+    <string name="hiw_record_t">Recording a drive</string>
+    <string name="hiw_record_b">Tap Start Drive. Mount your phone somewhere it won\'t move — the G-force readings assume a fixed position. Revline records GPS, speed and cornering/braking G continuously, writing to storage as it goes so a crash or flat battery never loses the drive. Stop from the app or the notification when you\'re done.</string>
+    <string name="hiw_slip_t">Your timing slip</string>
+    <string name="hiw_slip_b">Each finished drive becomes a printout: trap (top) speed, distance, duration, 0–100 time, peak G, a route map coloured by speed, and a G-force trace. Hit Share to send the card.</string>
+    <string name="hiw_auto_t">Automatic detection</string>
+    <string name="hiw_auto_b">Turn on \"Automatic trip detection\" in Profile and Revline starts and stops drives on its own when it senses you\'re driving. It uses more battery because it listens in the background. Off by default — manual Start Drive always works.</string>
+    <string name="hiw_account_t">Your account &amp; the leaderboard</string>
+    <string name="hiw_account_b">An account syncs your drives and puts you on the leaderboard. You\'ll be asked for your car (make and model) — it\'s required, so there are no \"unknown car\" entries. Three boards: fastest top speed, quickest 0–100, and longest continuous stretch above 100 km/h. Implausible runs are held for review, not posted automatically.</string>
+    <string name="hiw_social_t">Following &amp; feedback</string>
+    <string name="hiw_social_b">Find other drivers in Search, follow them, and like or comment on their runs. The bell shows follows, likes and comments on your own drives.</string>
+    <string name="hiw_photo_t">Profile picture</string>
+    <string name="hiw_photo_b">Tap your avatar in Profile to add a photo. It\'s cropped square and scaled down on your phone before it uploads.</string>
+    <string name="hiw_updates_t">Staying up to date</string>
+    <string name="hiw_updates_b">New versions install straight over the old one — no uninstall. When an update is out you\'ll see a prompt with a link to it, and occasionally there\'s an app-wide message from the Revline account.</string>
+
     <!-- Social -->
     <string name="follow">Follow</string>
     <string name="following">Following</string>

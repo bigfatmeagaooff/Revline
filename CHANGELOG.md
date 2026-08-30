@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.11.0]
+
+### Added
+
+- **Profile pictures.** Tap your avatar in Profile to set a photo (or remove it).
+  It's cropped square and scaled down on your phone before upload — which also
+  strips any location data the camera saved. Photos show on your profile, other
+  people's profiles, and in comments and follower lists; everywhere else falls
+  back to the letter chip.
+  - Server: `POST` / `DELETE /api/users/me/avatar`, files served from `/uploads`,
+    `DELETE /api/admin/users/:id/avatar` for moderation. No new database migration
+    (the `avatar_url` column already existed).
+- **First-run walkthrough.** New users get a four-screen intro (recording a drive,
+  the timing slip, the leaderboard, the social side) before the sign-in screen.
+- **"How Revline works"** — a reference page in Profile covering recording, the
+  timing slip, auto-detect, the leaderboard and car requirement, following, profile
+  pictures, and how updates work.
+
+### Changed
+
+- Back buttons on the trip summary and profile screens — both are opened from the
+  main screen but previously had no on-screen way back.
+
 ## [3.10.1]
 
 ### Fixed

@@ -77,6 +77,8 @@ class SyncRepository private constructor(
     val carMake: String? get() = tokenStore.carMake
     val carModel: String? get() = tokenStore.carModel
     val carYear: Int? get() = tokenStore.carYear
+    /** The signed-in user's profile picture URL (relative or absolute), or null. */
+    val avatarUrl: String? get() = tokenStore.avatarUrl
     /** A signed-in account with a car set — the gate for leaderboard uploads. */
     val hasCarProfile: Boolean get() = tokenStore.isLoggedIn && tokenStore.hasCar
 
@@ -129,7 +131,8 @@ class SyncRepository private constructor(
                     body.user.isAdmin,
                     body.user.carMake,
                     body.user.carModel,
-                    body.user.carYear
+                    body.user.carYear,
+                    body.user.avatarUrl
                 )
                 // Keep the local car profile (used by the share card) in step.
                 if (!body.user.carMake.isNullOrBlank()) {
@@ -167,6 +170,42 @@ class SyncRepository private constructor(
     /** Admin action: issue a one-time password reset code for a user (shown once). */
     suspend fun issueResetCode(userId: String): Result<AdminResetCodeResponse> =
         adminCall { api.adminIssueResetCode(userId) }
+
+    // --- Profile picture ---
+
+    /** Upload a new profile picture (base64 JPEG from [com.revline.tracker.util.Avatars]). */
+    suspend fun uploadAvatar(base64Jpeg: String): Result<String?> = withContext(Dispatchers.IO) {
+        if (!tokenStore.isLoggedIn) return@withContext Result.failure(Exception("Not signed in"))
+        try {
+            val resp = api.uploadAvatar(
+                com.revline.tracker.data.remote.AvatarUploadRequest(base64Jpeg)
+            )
+            val body = resp.body()
+            if (resp.isSuccessful && body != null) {
+                tokenStore.avatarUrl = body.avatarUrl
+                Result.success(body.avatarUrl)
+            } else {
+                Result.failure(Exception(errorMessage(resp)))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /** Remove the profile picture, back to the letter avatar. */
+    suspend fun removeAvatar(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val resp = api.deleteAvatar()
+            if (resp.isSuccessful) {
+                tokenStore.avatarUrl = null
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(errorMessage(resp)))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
         // Stop server pushes to this device before the auth token is gone.

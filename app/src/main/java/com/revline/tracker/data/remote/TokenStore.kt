@@ -26,6 +26,11 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_USERNAME, null)
         set(value) = prefs.edit().putString(KEY_USERNAME, value).apply()
 
+    /** The signed-in user's profile picture URL (relative or absolute), or null. */
+    var avatarUrl: String?
+        get() = prefs.getString(KEY_AVATAR, null)?.ifBlank { null }
+        set(value) = prefs.edit().putString(KEY_AVATAR, value).apply()
+
     val email: String? get() = prefs.getString(KEY_EMAIL, null)
 
     /**
@@ -76,7 +81,8 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         isAdmin: Boolean,
         carMake: String? = null,
         carModel: String? = null,
-        carYear: Int? = null
+        carYear: Int? = null,
+        avatarUrl: String? = null
     ) {
         prefs.edit()
             .putString(KEY_ACCESS, accessToken)
@@ -88,6 +94,7 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
             .putString(KEY_CAR_MAKE, carMake?.trim())
             .putString(KEY_CAR_MODEL, carModel?.trim())
             .putInt(KEY_CAR_YEAR, carYear ?: -1)
+            .putString(KEY_AVATAR, avatarUrl)
             .apply()
     }
 
@@ -106,6 +113,7 @@ class TokenStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_CAR_MAKE = "car_make"
         private const val KEY_CAR_MODEL = "car_model"
         private const val KEY_CAR_YEAR = "car_year"
+        private const val KEY_AVATAR = "avatar_url"
 
         @Volatile
         private var INSTANCE: TokenStore? = null
