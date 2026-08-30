@@ -34,6 +34,8 @@ class ProfileActivity : AppCompatActivity() {
         EdgeToEdge.apply(binding.root)
         sync = SyncRepository.getInstance(this)
 
+        binding.backButton.setOnClickListener { finish() }
+
         // The account car (when signed in) is the source of truth; fall back to the
         // local profile for signed-out users.
         val local = CarProfile.load(this)

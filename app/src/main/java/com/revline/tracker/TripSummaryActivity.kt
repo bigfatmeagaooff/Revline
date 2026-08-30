@@ -63,6 +63,7 @@ class TripSummaryActivity : AppCompatActivity() {
 
         repository = TripRepository.getInstance(this)
         sync = SyncRepository.getInstance(this)
+        binding.backButton.setOnClickListener { finish() }
         setUpMap()
 
         val tripId = intent.getLongExtra(EXTRA_TRIP_ID, -1L)
