@@ -13,7 +13,7 @@ Revline is built on a local-first model: drives can be recorded and viewed entir
 
 **Effective Date:** 2026-09-02  
 **Last Updated:** 2026-09-01  
-**Contact:** [CONTACT EMAIL]
+**Contact:** revline.au@gmail.com
 
 ---
 
@@ -211,7 +211,7 @@ You have the right to request a copy of your personal data. We can export your a
 You can update your account information (email, username, car, profile picture) directly in the app's Profile screen.
 
 ### Deletion
-You can delete your account in-app (Profile → Account → Delete Account) or request manual deletion by emailing [CONTACT EMAIL].
+You can delete your account in-app (Profile → Account → Delete Account) or request manual deletion by emailing revline.au@gmail.com.
 
 ### Portability
 Trip data can be exported from the app (local Room database) or accessed via your account on the server.
@@ -223,13 +223,13 @@ If you withdraw consent for data collection (e.g. you no longer want to upload t
 - Delete your account (which removes server-side data).
 
 ### Right to Object (EU/GDPR)
-If you are in the EU, you have the right to object to certain processing. Contact [CONTACT EMAIL] to discuss.
+If you are in the EU, you have the right to object to certain processing. Contact revline.au@gmail.com to discuss.
 
 ---
 
 ## Children's Privacy
 
-Revline is **not directed at children under 13**. We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has created an account or provided data, we will delete that account and data promptly. If you are a parent or guardian concerned about a child's account, please contact [CONTACT EMAIL].
+Revline is **not directed at children under 13**. We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has created an account or provided data, we will delete that account and data promptly. If you are a parent or guardian concerned about a child's account, please contact revline.au@gmail.com.
 
 ---
 
@@ -243,7 +243,7 @@ We may update this policy from time to time. We will post the updated policy her
 
 For privacy questions, data requests, or complaints:
 
-**Email:** [CONTACT EMAIL]
+**Email:** revline.au@gmail.com
 
 We will respond to all requests within 30 days.
 
