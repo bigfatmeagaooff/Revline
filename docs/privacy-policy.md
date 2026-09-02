@@ -192,7 +192,7 @@ We do not share this data with any other third parties.
   - **Does NOT** delete local drive history on your device (local-first design; it stays for your own records).
 
 ### Manual Deletion Requests
-- To request deletion of your data or obtain a copy of your personal information, email [CONTACT EMAIL] with:
+- To request deletion of your data or obtain a copy of your personal information, email revline.au@gmail.com with:
   - Your username or email
   - A description of your request (e.g. "delete my account and all associated data")
 - We will respond within 30 days.
