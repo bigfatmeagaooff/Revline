@@ -46,10 +46,11 @@ someone else's drive) is removed along with your account.
 - **Drive history stored on your own device.** Revline is local-first: drives you
   recorded are saved on your phone and are not deleted by this process. They are
   not on our servers. To remove them, uninstall the app or clear its data.
-- **Backups and logs.** Routine encrypted server backups are purged on their normal
-  rotation, within **[30] days**. Crash and diagnostic reports processed by our
-  error-monitoring provider (Sentry) are not linked to your account after deletion
-  and expire automatically under that provider's retention period (about 90 days).
+- **Server backups.** Revline does not keep scheduled server backups, so once your
+  account data is deleted it is not recoverable.
+- **Logs.** Crash and diagnostic reports processed by our error-monitoring provider
+  (Sentry) are not linked to your account after deletion and expire automatically
+  under that provider's retention period (about 90 days).
 
 ## Contact
 
