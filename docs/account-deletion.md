@@ -6,7 +6,7 @@ permalink: /account-deletion/
 
 # Deleting your Revline account and data
 
-**App:** Revline &nbsp;·&nbsp; **Developer:** [DEVELOPER NAME]
+**App:** Revline &nbsp;·&nbsp; **Developer:** Revline
 **Last updated:** 2026-09-02
 
 This page explains how to request deletion of your Revline account and the data
@@ -22,7 +22,7 @@ associated with it.
 
 ## If you can't use the app
 
-Email **[CONTACT EMAIL]** from the address on your Revline account, with the
+Email **revline.au@gmail.com** from the address on your Revline account, with the
 subject "Delete my account". We will verify the request and delete the account
 within **30 days**.
 
@@ -53,4 +53,4 @@ someone else's drive) is removed along with your account.
 
 ## Contact
 
-Questions about deletion or your data: **[CONTACT EMAIL]**
+Questions about deletion or your data: **revline.au@gmail.com**
