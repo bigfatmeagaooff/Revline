@@ -1,0 +1,605 @@
+<title>Revline Beta Entry</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink: #0e0f12;
+    --surface: #16181d;
+    --surface-2: #1d2027;
+    --text: #edebe4;
+    --text-dim: #9195a0;
+    --text-faint: #62656e;
+    --redline: #f5121c;
+    --redline-dim: rgba(245,18,28,0.16);
+    --stage: #d8ff3e;
+    --rule: rgba(255,255,255,0.09);
+    --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{color-scheme:dark;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;}
+
+  .wrap{
+    max-width:680px;
+    margin:0 auto;
+    padding:0 20px 96px;
+  }
+
+  /* faint diagonal speed-line texture behind the hero only */
+  .hero{
+    position:relative;
+    padding:40px 0 44px;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:-20% -10%;
+    background:repeating-linear-gradient(
+      115deg,
+      rgba(245,18,28,0.05) 0px,
+      rgba(245,18,28,0.05) 2px,
+      transparent 2px,
+      transparent 46px
+    );
+    pointer-events:none;
+    z-index:0;
+  }
+  .hero > *{position:relative; z-index:1;}
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:36px;
+  }
+  .wordmark{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-style:italic;
+    font-size:26px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .wordmark .rev{color:var(--text);}
+  .wordmark .line{color:var(--redline);}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+
+  h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(40px, 10vw, 64px);
+    line-height:0.98;
+    letter-spacing:0.2px;
+    text-transform:uppercase;
+    margin:0 0 18px;
+    text-wrap:balance;
+  }
+  h1 .accent{color:var(--redline);}
+
+  .lede{
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:52ch;
+    margin:0 0 28px;
+  }
+  .lede strong{color:var(--text); font-weight:600;}
+
+  .stat-strip{
+    display:flex;
+    gap:0;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    margin-bottom:8px;
+  }
+  .stat-strip div{
+    flex:1;
+    padding:14px 4px;
+    text-align:center;
+    border-right:1px solid var(--rule);
+  }
+  .stat-strip div:last-child{border-right:none;}
+  .stat-num{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:20px;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    color:var(--text);
+  }
+  .stat-label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin-top:4px;
+  }
+
+  /* --- sample slip readout --- */
+  .section-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin:0 0 12px;
+  }
+
+  .slip{
+    background:var(--surface);
+    border-radius:6px;
+    padding:22px 24px;
+    margin-bottom:56px;
+  }
+  .slip-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:4px;
+  }
+  .slip-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+  .chip{
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:var(--stage);
+    padding:3px 8px;
+    border-radius:999px;
+    font-weight:600;
+  }
+  .slip-top{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-faint);
+    margin-bottom:14px;
+  }
+  .slip-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:9px 0;
+    border-top:1px dashed var(--rule);
+    font-family:var(--font-mono);
+    font-size:13px;
+  }
+  .slip-row:first-of-type{border-top:none;}
+  .slip-row .k{color:var(--text-dim); letter-spacing:0.03em;}
+  .slip-row .v{color:var(--text); font-weight:600; font-variant-numeric:tabular-nums;}
+  .slip-row .v.hot{color:var(--redline); font-size:16px;}
+
+  /* --- ticket / form --- */
+  .ticket{
+    position:relative;
+    background:var(--surface);
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:56px;
+  }
+  .ticket-head{
+    padding:26px 26px 22px;
+  }
+  .ticket-head h2{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:32px;
+    text-transform:uppercase;
+    line-height:1.02;
+    margin:0 0 10px;
+    text-wrap:balance;
+  }
+  .ticket-head p{
+    color:var(--text-dim);
+    font-size:14.5px;
+    margin:0;
+    max-width:46ch;
+  }
+
+  .tear{
+    position:relative;
+    height:0;
+    border-top:2px dashed var(--rule);
+    margin:0 26px;
+  }
+  .tear::before,
+  .tear::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--ink);
+    transform:translateY(-50%);
+  }
+  .tear::before{left:-40px;}
+  .tear::after{right:-40px;}
+
+  form{padding:24px 26px 26px;}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin-bottom:7px;
+  }
+  .field input[type="text"],
+  .field input[type="email"]{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:12px 13px;
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:15px;
+  }
+  .field input::placeholder{color:var(--text-faint);}
+  .field input:focus{
+    outline:2px solid var(--redline);
+    outline-offset:1px;
+    border-color:transparent;
+  }
+  .field small{
+    display:block;
+    margin-top:6px;
+    font-size:12px;
+    color:var(--text-faint);
+  }
+
+  .check-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin:20px 0 22px;
+  }
+  .check-row input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    margin:2px 0 0;
+    accent-color:var(--redline);
+    flex:none;
+  }
+  .check-row label{
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+
+  .cta{
+    width:100%;
+    background:var(--redline);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    padding:15px 18px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .cta:hover{background:#d90f18;}
+  .cta:focus-visible{outline:2px solid var(--stage); outline-offset:2px;}
+
+  .fallback{
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+  .fallback button{
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    text-decoration:underline;
+    text-underline-offset:2px;
+    font:inherit;
+    cursor:pointer;
+    padding:0;
+  }
+  .fallback button:hover{color:var(--text);}
+
+  .confirm{
+    display:none;
+    padding:24px 26px 26px;
+    border-top:1px solid var(--rule);
+  }
+  .confirm.show{display:block;}
+  .confirm .ok{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--stage);
+    margin-bottom:8px;
+  }
+  .confirm p{
+    font-size:14px;
+    color:var(--text-dim);
+    margin:0 0 4px;
+  }
+  .confirm .addr{
+    font-family:var(--font-mono);
+    color:var(--text);
+    user-select:all;
+  }
+
+  form.hide, .ticket-head.hide{display:none;}
+
+  /* --- expectations / faq --- */
+  .faq{margin-bottom:56px;}
+  .faq h3{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:26px;
+    text-transform:uppercase;
+    margin:0 0 18px;
+  }
+  .faq-item{
+    padding:16px 0;
+    border-top:1px solid var(--rule);
+  }
+  .faq-item:last-child{border-bottom:1px solid var(--rule);}
+  .faq-item dt{
+    font-weight:600;
+    font-size:14.5px;
+    margin-bottom:5px;
+    color:var(--text);
+  }
+  .faq-item dd{
+    margin:0;
+    font-size:14px;
+    color:var(--text-dim);
+    max-width:56ch;
+  }
+
+  .safety{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:16px 18px;
+    background:var(--redline-dim);
+    border-radius:6px;
+    margin-bottom:56px;
+  }
+  .safety .bar{
+    flex:none;
+    width:3px;
+    align-self:stretch;
+    background:var(--redline);
+    border-radius:2px;
+  }
+  .safety p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--text-dim);
+  }
+  .safety strong{color:var(--text);}
+
+  footer{
+    padding-top:24px;
+    border-top:1px solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  footer .loc{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  footer .to{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--text-faint);
+  }
+
+  @media (max-width:420px){
+    .stat-strip{flex-wrap:wrap;}
+    .stat-strip div{flex:1 1 33%; border-bottom:1px solid var(--rule);}
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="brand">
+      <span class="wordmark"><span class="rev">Rev</span><span class="line">Line</span></span>
+      <span class="eyebrow">Closed beta &middot; Adelaide, SA</span>
+    </div>
+
+    <h1>Be one of the first <span class="accent">12</span> on the slip.</h1>
+    <p class="lede">
+      Revline turns a drive into a timing slip &mdash; route, top speed, 0&ndash;100 and G-force,
+      printed like a drag-strip receipt. Before it goes live on Google Play we need
+      <strong>real testers running it for 14 straight days.</strong> Takes two minutes to sign up.
+    </p>
+
+    <div class="stat-strip">
+      <div><span class="stat-num">0&ndash;100</span><span class="stat-label">Timed</span></div>
+      <div><span class="stat-num">G-Force</span><span class="stat-label">Graphed</span></div>
+      <div><span class="stat-num">Meets</span><span class="stat-label">Local</span></div>
+    </div>
+  </div>
+
+  <div class="section-label">What you get after every drive</div>
+  <div class="slip">
+    <div class="slip-head">
+      <span class="slip-title">Time Slip</span>
+      <span class="chip">Sample</span>
+    </div>
+    <span class="slip-top">RUN &middot; SAT 29 AUG &middot; 8:10 PM</span>
+    <div class="slip-row"><span class="k">Top speed</span><span class="v hot">176 km/h</span></div>
+    <div class="slip-row"><span class="k">Distance</span><span class="v">101.3 km</span></div>
+    <div class="slip-row"><span class="k">Duration</span><span class="v">93:48</span></div>
+    <div class="slip-row"><span class="k">Longest fast stretch</span><span class="v">17.2 km</span></div>
+    <div class="slip-row"><span class="k">Max lateral G</span><span class="v">0.70 g</span></div>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head" id="ticketHead">
+      <h2>Get your entry</h2>
+      <p>
+        We'll send you the Play Console opt-in link once the closed test opens.
+        No spam, no mailing list &mdash; this is the only email you'll get from it.
+      </p>
+    </div>
+
+    <div class="tear"><!-- torn-stub divider --></div>
+
+    <form id="signupForm">
+      <div class="field">
+        <label for="name">Name <span style="text-transform:none;color:var(--text-faint);">(optional)</span></label>
+        <input type="text" id="name" name="name" placeholder="What do we call you?">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        <small>Use the Google account you'd want the closed-test invite sent to.</small>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="sideload" name="sideload">
+        <label for="sideload">I already run the sideload (non&ndash;Play Store) build of Revline.</label>
+      </div>
+      <button type="submit" class="cta">Email my entry</button>
+      <div class="fallback">
+        Nothing happen? <button type="button" id="copyBtn">Copy my details to paste into an email instead</button>
+      </div>
+    </form>
+
+    <div class="confirm" id="confirm">
+      <div class="ok">Entry drafted</div>
+      <p>Your email app should be opening now, addressed to <span class="addr">revline.au@gmail.com</span>.</p>
+      <p>Hit send and you're in the queue &mdash; we'll follow up when the closed test opens.</p>
+    </div>
+  </div>
+
+  <div class="faq">
+    <h3>What to expect</h3>
+    <dl>
+      <div class="faq-item">
+        <dt>How long does testing run?</dt>
+        <dd>Google requires at least 12 opted-in testers active for 14 continuous days before a closed test can graduate. You'll get a link to accept on your phone &mdash; that's what starts your 14 days.</dd>
+      </div>
+      <div class="faq-item">
+        <dt>What does the app collect?</dt>
+        <dd>Precise location while a drive is actively being recorded, your account email, the trips and car details you upload, and crash/diagnostic reports. Location tracking stops the moment you end a drive.</dd>
+      </div>
+      <div class="faq-item">
+        <dt>Battery impact?</dt>
+        <dd>The Play build only tracks while you have a drive actively started &mdash; there's no background tracking, so it only draws power while you're actually recording a run.</dd>
+      </div>
+      <div class="faq-item">
+        <dt>I already sideload Revline &mdash; what changes?</dt>
+        <dd>The Play build is signed differently to sideload builds, so switching over needs a one-time uninstall/reinstall, and any drives that never synced will be lost. Sync first if you've got local-only runs you care about.</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="safety">
+    <div class="bar"></div>
+    <p><strong>Revline is a drive log, not a dare.</strong> Record on public roads within the limit, or take the timed stuff to a closed course or track day. The G-force graph is more fun when nobody's calling the cops.</p>
+  </div>
+
+  <footer>
+    <span class="loc">Revline &middot; Adelaide, SA</span>
+    <span class="to">Entries &rarr; revline.au@gmail.com</span>
+  </footer>
+
+</div>
+
+<script>
+  var DEST = "revline.au@gmail.com";
+
+  function details() {
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var sideload = document.getElementById('sideload').checked;
+    return {
+      name: name,
+      email: email,
+      sideload: sideload,
+      lines: [
+        "Name: " + (name || "(not given)"),
+        "Email: " + email,
+        "Already running the sideload build: " + (sideload ? "Yes" : "No")
+      ]
+    };
+  }
+
+  function mailtoUrl(d) {
+    var subject = encodeURIComponent("Revline closed beta — tester sign-up");
+    var body = encodeURIComponent(d.lines.join("\n") + "\n\nSent from the Revline beta entry page.");
+    return "mailto:" + DEST + "?subject=" + subject + "&body=" + body;
+  }
+
+  document.getElementById('signupForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('email');
+    if (!email.checkValidity()) {
+      email.reportValidity();
+      return;
+    }
+    var d = details();
+    window.location.href = mailtoUrl(d);
+
+    document.getElementById('ticketHead').classList.add('hide');
+    document.getElementById('signupForm').classList.add('hide');
+    document.getElementById('confirm').classList.add('show');
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var d = details();
+    var text = d.lines.join("\n") + "\n\nSend this to " + DEST;
+    var btn = this;
+    var original = btn.textContent;
+    function done(ok) {
+      btn.textContent = ok ? "Copied — paste it into an email to " + DEST : "Couldn't copy — email is " + DEST;
+      setTimeout(function () { btn.textContent = original; }, 3200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else {
+      done(false);
+    }
+  });
+</script>
